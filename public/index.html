@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#081321" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="صلاتي" />
+  <title>صلاتي — تذكير الصلاة والقبلة</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">تذكير الصلاة</p>
+        <h1>صلاتي</h1>
+      </div>
+      <button id="settingsBtn" class="icon-btn" aria-label="الإعدادات">⚙️</button>
+    </header>
+
+    <section id="homeView" class="view active">
+      <article class="hero-card">
+        <div class="hero-glow"></div>
+        <div class="hero-top">
+          <span id="locationLabel">الموقع غير محدد</span>
+          <span id="todayLabel">اليوم</span>
+        </div>
+        <div class="next-label">الصلاة القادمة</div>
+        <div id="nextPrayerName" class="next-prayer">—</div>
+        <div id="nextPrayerTime" class="next-time">--:--</div>
+        <div id="countdown" class="countdown">حدّد موقعك لعرض المواقيت</div>
+      </article>
+
+      <div class="action-grid">
+        <button id="enableNotificationsBtn" class="primary-action">
+          <span class="action-icon">🔔</span>
+          <span><b>فعّل تنبيهات الصلاة</b><small>إشعار عند دخول وقت الصلاة</small></span>
+        </button>
+        <button id="locateBtn" class="secondary-action">
+          <span class="action-icon">📍</span>
+          <span><b>تحديد الموقع</b><small>لحساب المواقيت والقبلة</small></span>
+        </button>
+      </div>
+
+      <section class="section-card">
+        <div class="section-title-row">
+          <h2>مواقيت اليوم</h2>
+          <button id="testAlarmBtn" class="text-btn">تجربة المنبّه</button>
+        </div>
+        <div id="prayerList" class="prayer-list"></div>
+      </section>
+    </section>
+
+    <section id="qiblaView" class="view">
+      <article class="qibla-card">
+        <p class="eyebrow">اتجاه القبلة</p>
+        <h2>القبلة</h2>
+        <div class="compass-wrap">
+          <div class="compass" id="compass">
+            <div class="compass-ring"></div>
+            <span class="dir north">ش</span>
+            <span class="dir east">ق</span>
+            <span class="dir south">ج</span>
+            <span class="dir west">غ</span>
+            <div id="qiblaArrow" class="qibla-arrow">▲</div>
+            <div class="kaaba">🕋</div>
+          </div>
+        </div>
+        <div id="qiblaDegrees" class="qibla-degrees">—°</div>
+        <p id="qiblaHint" class="muted">حدّد موقعك أولًا، ثم فعّل البوصلة.</p>
+        <button id="enableCompassBtn" class="pill-btn">فعّل البوصلة</button>
+      </article>
+    </section>
+
+    <section id="settingsView" class="view">
+      <article class="section-card settings-card">
+        <div class="section-title-row"><h2>إعدادات الصلاة</h2></div>
+        <p class="muted">اختر الصلوات التي تريد إشعارًا عند دخول وقتها.</p>
+        <div id="prayerToggles" class="toggle-list"></div>
+        <button id="refreshTimesBtn" class="pill-btn wide">تحديث المواقيت</button>
+        <button id="disableNotificationsBtn" class="danger-btn wide">إيقاف التنبيهات</button>
+        <p class="fine-print">لتنبيهات أفضل على iPhone: أضف التطبيق إلى الشاشة الرئيسية ثم افتحه واسمح بالإشعارات.</p>
+      </article>
+    </section>
+
+    <nav class="bottom-nav" aria-label="التنقل">
+      <button class="nav-btn active" data-view="homeView"><span>🕌</span><small>الصلاة</small></button>
+      <button class="nav-btn" data-view="qiblaView"><span>🧭</span><small>القبلة</small></button>
+      <button class="nav-btn" data-view="settingsView"><span>⚙️</span><small>الإعدادات</small></button>
+    </nav>
+  </main>
+
+  <div id="alarmScreen" class="alarm-screen" aria-hidden="true">
+    <div class="alarm-stars"></div>
+    <div class="alarm-inner">
+      <div class="alarm-head">⏰ <span>منبّه الصلاة</span></div>
+      <div id="alarmClock" class="alarm-clock">04:41</div>
+      <div class="moon">☾</div>
+      <div id="alarmPrayer" class="alarm-prayer">صلاة الفجر</div>
+      <div id="alarmAudioStatus" class="alarm-audio-status">جاري تشغيل الأذان…</div>
+      <button id="playAdhanBtn" class="play-adhan-btn" hidden>🔊 تشغيل الأذان</button>
+      <div class="alarm-actions">
+        <button id="snoozeBtn" class="snooze-btn">غفوة 5 دقائق</button>
+        <button id="stopAlarmBtn" class="stop-btn">إيقاف</button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="adhanAudio" preload="metadata" playsinline>
+    <source src="https://upload.wikimedia.org/wikipedia/commons/transcoded/a/a9/Muslim_calling_to_prayer.ogg/Muslim_calling_to_prayer.ogg.mp3" type="audio/mpeg" />
+    <source src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Muslim_calling_to_prayer.ogg" type="audio/ogg" />
+  </audio>
+
+  <div id="toast" class="toast"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
