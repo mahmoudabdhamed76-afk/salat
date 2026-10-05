@@ -3,46 +3,84 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#081321" />
+  <meta name="theme-color" content="#f5eee2" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="صلاتي" />
   <title>صلاتي — تذكير الصلاة والقبلة</title>
   <link rel="manifest" href="/manifest.json" />
   <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="preload" href="/fonts/plex-arabic-400.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/plex-arabic-700.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/kids.css" />
-  <link rel="stylesheet" href="/theme.css" />
   <link rel="stylesheet" href="/companion.css" />
   <link rel="stylesheet" href="/motion.css" />
-  <script src="/theme.js"></script>
 </head>
 <body>
   <main class="app-shell">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">تذكير الصلاة</p>
-        <h1>صلاتي</h1>
+    <header id="topbar" class="topbar">
+      <div class="topbar-title">
+        <p id="pageEyebrow" class="eyebrow">أهلًا بك في صلاتي</p>
+        <h1 id="pageTitle">السلام عليكم</h1>
       </div>
       <div class="topbar-actions">
         <span id="offlineBadge" class="offline-badge" role="status" hidden>⚡ بدون إنترنت</span>
-        <button id="themeBtn" class="icon-btn" aria-label="المظهر">🌗</button>
-        <button id="settingsBtn" class="icon-btn" aria-label="الإعدادات">⚙️</button>
+        <button id="settingsBtn" class="icon-btn" aria-label="الإعدادات"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       </div>
     </header>
 
     <section id="homeView" class="view active">
-      <article class="hero-card">
-        <div class="hero-glow"></div>
+      <section class="brand-hero" aria-label="صلاتي">
+        <svg class="brand-emblem" viewBox="0 0 140 100" role="img" aria-label="شعار صلاتي">
+          <defs>
+            <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#f1d898"/><stop offset=".55" stop-color="#d4ab57"/><stop offset="1" stop-color="#a8822f"/>
+            </linearGradient>
+          </defs>
+          <path d="M30 92 V52 C30 30 48 16 70 6 C92 16 110 30 110 52 V92" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
+          <path d="M44 92 V56 C44 41 55 31 70 23 C85 31 96 41 96 56 V92" fill="none" stroke="url(#gold)" stroke-width="2.5" stroke-linecap="round" opacity=".75"/>
+          <path d="M77 50 a13 13 0 1 1 -10 -17 a10 10 0 1 0 10 17 z" fill="url(#gold)"/>
+          <path d="M80 34 l1.6 3.4 3.7 .5 -2.7 2.6 .7 3.7 -3.3 -1.8 -3.3 1.8 .7 -3.7 -2.7 -2.6 3.7 -.5 z" fill="url(#gold)"/>
+          <path d="M18 92 H122" stroke="url(#gold)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M8 92 h5 M127 92 h5" stroke="url(#gold)" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+        </svg>
+        <h2 class="brand-name">صلاتي</h2>
+        <div class="brand-rule" aria-hidden="true"><span></span></div>
+        <p class="brand-tag">مواقيتك وأذكارك كل يوم</p>
+      </section>
+
+      <article class="hero-card" aria-labelledby="nextPrayerName">
+        <div class="next-head">
+          <span class="tile-icon" aria-hidden="true">🕌</span>
+          <div class="next-info">
+            <div class="next-label">الصلاة القادمة</div>
+            <div id="nextPrayerName" class="next-prayer">—</div>
+          </div>
+          <div class="next-at">
+            <div id="nextPrayerTime" class="next-time">--:--</div>
+            <small>وقت الأذان</small>
+          </div>
+        </div>
+        <div id="countdown" class="countdown">حدّد موقعك لعرض المواقيت</div>
         <div class="hero-top">
           <span id="locationLabel">الموقع غير محدد</span>
           <span id="todayLabel">اليوم</span>
         </div>
-        <div class="next-label">الصلاة القادمة</div>
-        <div id="nextPrayerName" class="next-prayer">—</div>
-        <div id="nextPrayerTime" class="next-time">--:--</div>
-        <div id="countdown" class="countdown">حدّد موقعك لعرض المواقيت</div>
       </article>
+
+      <div class="quick-tiles">
+        <button id="quickAdhkarBtn" class="quick-tile gold">
+          <span class="tile-icon" aria-hidden="true">📿</span>
+          <span class="tile-text"><b>أذكار الصلاة</b><small>بعد كل صلاة</small></span>
+          <span class="tile-chevron" aria-hidden="true">›</span>
+        </button>
+        <button class="quick-tile" data-goto="qiblaView">
+          <span class="tile-icon" aria-hidden="true">🧭</span>
+          <span class="tile-text"><b>اتجاه القبلة</b><small>بالبوصلة</small></span>
+          <span class="tile-chevron" aria-hidden="true">›</span>
+        </button>
+      </div>
 
       <button id="setupBanner" class="setup-banner" hidden>
         <span class="setup-banner-icon" aria-hidden="true">✨</span>
@@ -80,8 +118,6 @@
 
     <section id="qiblaView" class="view">
       <article class="qibla-card">
-        <p class="eyebrow">اتجاه القبلة</p>
-        <h2>القبلة</h2>
         <div class="compass-wrap">
           <div class="compass" id="compass">
             <div class="compass-ring"></div>
@@ -144,8 +180,7 @@
 
     <section id="hadithView" class="view" aria-labelledby="hadithHeading">
       <section class="section-card hadith-intro">
-        <p class="eyebrow">من هدي النبي ﷺ</p>
-        <h2 id="hadithHeading">أحاديث نبوية</h2>
+        <h2 id="hadithHeading" class="intro-title">من هدي النبي ﷺ</h2>
         <p class="muted">أحاديث مختارة من صحيحي البخاري ومسلم، مع الراوي ورقم الحديث ومصدره.</p>
         <div class="hadith-controls">
           <label for="hadithSearch">ابحث في الأحاديث</label>
@@ -186,14 +221,6 @@
         </ul>
       </article>
       <article class="section-card settings-card">
-        <div class="section-title-row"><h2>المظهر</h2><span aria-hidden="true">🎨</span></div>
-        <div class="theme-options" role="group" aria-label="اختر المظهر">
-          <button class="theme-option" data-mode="auto" aria-pressed="false"><span>🌗</span><b>تلقائي</b><small>ليلي من المغرب للفجر</small></button>
-          <button class="theme-option" data-mode="day" aria-pressed="false"><span>☀️</span><b>نهاري</b><small>بألوان قسم الطفل</small></button>
-          <button class="theme-option" data-mode="night" aria-pressed="false"><span>🌙</span><b>ليلي</b><small>الكحلي الهادئ</small></button>
-        </div>
-      </article>
-      <article class="section-card settings-card">
         <div class="section-title-row"><h2>صوت الأذان</h2><span aria-hidden="true">🔊</span></div>
         <label for="adhanVoiceSelect" class="field-label">اختر المؤذن</label>
         <select id="adhanVoiceSelect" class="settings-select"></select>
@@ -219,11 +246,11 @@
 
     <nav class="bottom-nav" aria-label="التنقل">
       <span class="nav-indicator" aria-hidden="true"></span>
-      <button class="nav-btn active" data-view="homeView"><span>🕌</span><small>الصلاة</small></button>
-      <button class="nav-btn" data-view="qiblaView"><span>🧭</span><small>القبلة</small></button>
-      <button class="nav-btn" data-view="kidsView"><span>🌈</span><small>للطفل</small></button>
-      <button class="nav-btn" data-view="hadithView"><span>📖</span><small>الأحاديث</small></button>
-      <button class="nav-btn" data-view="settingsView"><span>⚙️</span><small>الإعدادات</small></button>
+      <button class="nav-btn active" data-view="homeView"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20.5V11l8-6.5 8 6.5v9.5"/><path d="M9.2 20.5v-4.8a2.8 2.8 0 0 1 5.6 0v4.8"/><path d="M2.5 20.5h19"/></svg></span><small>الصلاة</small></button>
+      <button class="nav-btn" data-view="qiblaView"><span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.6 8.4l-2.1 5.1-5.1 2.1 2.1-5.1z"/></svg></span><small>القبلة</small></button>
+      <button class="nav-btn" data-view="kidsView"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8L3.5 9.7l5.9-.9z"/></svg></span><small>للطفل</small></button>
+      <button class="nav-btn" data-view="hadithView"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.2C10 4.7 7 4.2 3.5 4.7v13.6c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V4.7C17 4.2 14 4.7 12 6.2z"/><path d="M12 6.2v13.6"/></svg></span><small>الأحاديث</small></button>
+      <button class="nav-btn" data-view="settingsView"><span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><small>الإعدادات</small></button>
     </nav>
   </main>
 

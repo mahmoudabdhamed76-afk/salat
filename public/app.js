@@ -61,8 +61,17 @@ function moveNavIndicator() {
   nav.classList.add('has-indicator');
 }
 
+// Home greets; inner screens get the green title bar.
+const VIEW_TITLES = { qiblaView: 'اتجاه القبلة', kidsView: 'ركن الطفل', hadithView: 'الأحاديث', settingsView: 'الإعدادات' };
+function updateHeader(viewId) {
+  const title = VIEW_TITLES[viewId];
+  $('topbar')?.classList.toggle('inner', Boolean(title));
+  if ($('pageTitle')) $('pageTitle').textContent = title || 'السلام عليكم';
+}
+
 function switchView(viewId) {
   const same = viewId === currentView;
+  updateHeader(viewId);
   const dir = VIEW_ORDER.indexOf(viewId) >= VIEW_ORDER.indexOf(currentView) ? 'fwd' : 'back';
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === viewId));
   if (!same) {
@@ -151,7 +160,8 @@ function updateNextPrayer() {
   el.nextPrayerTime.textContent = SalatUtils.formatTime(next.time);
   const h = Math.floor(diff / 60);
   const m = Math.max(0, Math.floor(diff % 60));
-  el.countdown.textContent = h > 0 ? `متبقي ${h} س و ${m} د` : `متبقي ${m} دقيقة`;
+  const n = (v) => v.toLocaleString('ar-EG');
+  el.countdown.textContent = h > 0 ? `باقي ${n(h)} س و ${n(m)} د` : `باقي ${n(m)} دقيقة`;
   renderPrayerList();
 }
 
@@ -690,6 +700,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 async function init() {
+  updateHeader('homeView');
   playViewEnter($('homeView'), 'fwd');
   moveNavIndicator();
   window.addEventListener('resize', moveNavIndicator);

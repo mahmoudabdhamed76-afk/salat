@@ -54,36 +54,34 @@
 .view.entering .hadith-list > *:nth-child(2) { animation-delay: .06s; }
 .view.entering .hadith-list > *:nth-child(3) { animation-delay: .12s; }
 .view.entering .hadith-list > *:nth-child(n+4) { animation-delay: .18s; }
-.view.entering .theme-option { animation: popIn .42s var(--ease-spring) both; }
-.view.entering .theme-option:nth-child(2) { animation-delay: .05s; }
-.view.entering .theme-option:nth-child(3) { animation-delay: .1s; }
+.view.entering .quick-tile { animation: popIn .45s var(--ease-spring) both .18s; }
+.view.entering .quick-tile:nth-child(2) { animation-delay: .24s; }
 @keyframes popIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 
 /* ---------- Living details ---------- */
-.hero-glow { animation: glowDrift 9s ease-in-out infinite alternate; }
-@keyframes glowDrift { to { transform: translate(60px, 40px) scale(1.15); } }
-.countdown::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-inline-end: 8px; align-self: center; animation: beat 2s ease-in-out infinite; }
-@keyframes beat { 50% { transform: scale(1.5); opacity: .45; } }
+.brand-emblem { animation: emblemIn .9s var(--ease-spring) both .05s; }
+@keyframes emblemIn { from { opacity: 0; transform: translateY(-10px) scale(.85); } to { opacity: 1; transform: none; } }
+.brand-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.55) 50%, transparent 70%); transform: translateX(-100%); animation: shimmer 5.5s ease-in-out infinite 1.2s; pointer-events: none; }
+@keyframes shimmer { 0%, 70% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+.countdown { animation: none; }
 
 /* ---------- Bottom bar: sliding pill + icon bounce ---------- */
 .bottom-nav { isolation: isolate; }
-.nav-indicator { position: absolute; top: 9px; bottom: 9px; left: 0; width: 0; border-radius: 16px; background: rgba(255,255,255,.09); z-index: -1; transition: transform .5s var(--ease-spring), width .3s var(--ease-out); pointer-events: none; }
-html[data-theme="day"] .nav-indicator { background: #efe6fb; }
+.nav-indicator { position: absolute; top: 9px; bottom: 9px; left: 0; width: 0; border-radius: 16px; background: var(--nav-pill); z-index: -1; transition: transform .5s var(--ease-spring), width .3s var(--ease-out); pointer-events: none; }
 .bottom-nav.has-indicator .nav-btn.active { background: transparent; }
 .nav-btn { transition: color .25s; }
 .nav-btn.active span { animation: navPop .5s var(--ease-spring); }
 @keyframes navPop { 0% { transform: scale(.7) translateY(4px); } 60% { transform: scale(1.18) translateY(-3px); } 100% { transform: none; } }
 
 /* ---------- Press feedback ---------- */
-:is(.primary-action, .secondary-action, .pill-btn, .soft-btn, .danger-btn, .theme-option, .icon-btn, .setup-banner, .snooze-btn, .stop-btn, .play-adhan-btn, .kids-topic, .kids-next, .kids-back, .kids-answer, .dhikr-card) {
+:is(.primary-action, .secondary-action, .pill-btn, .soft-btn, .danger-btn, .quick-tile, .icon-btn, .setup-banner, .snooze-btn, .stop-btn, .play-adhan-btn, .kids-topic, .kids-next, .kids-back, .kids-answer, .dhikr-card) {
   transition: transform .2s var(--ease-out), box-shadow .2s, background-color .25s, border-color .25s;
 }
-:is(.primary-action, .secondary-action, .pill-btn, .soft-btn, .danger-btn, .theme-option, .icon-btn, .setup-banner, .snooze-btn, .stop-btn, .play-adhan-btn, .kids-topic, .kids-next, .kids-back, .kids-answer):active { transform: scale(.95); }
+:is(.primary-action, .secondary-action, .pill-btn, .soft-btn, .danger-btn, .quick-tile, .icon-btn, .setup-banner, .snooze-btn, .stop-btn, .play-adhan-btn, .kids-topic, .kids-next, .kids-back, .kids-answer):active { transform: scale(.95); }
 .dhikr-card:has(.dhikr-tap:active) { transform: scale(.98); }
 .dhikr-card.done { animation: popIn .35s var(--ease-spring); }
-.theme-option[aria-pressed="true"] span { animation: navPop .5s var(--ease-spring); }
 @media (hover: hover) {
-  :is(.primary-action, .secondary-action, .pill-btn, .soft-btn, .theme-option, .setup-banner):hover { transform: translateY(-2px); }
+  :is(.primary-action, .secondary-action, .pill-btn, .soft-btn, .quick-tile, .setup-banner):hover { transform: translateY(-2px); }
 }
 
 /* ---------- Alarm screen entrance ---------- */
@@ -104,6 +102,3 @@ html[data-theme="day"] .nav-indicator { background: #efe6fb; }
 .toast.show { transform: translate(-50%, 0) scale(1); }
 .setup-banner:not([hidden]) { animation: riseIn .5s var(--ease-out) both .1s; }
 .offline-badge:not([hidden]) { animation: popIn .4s var(--ease-spring); }
-::view-transition-old(root), ::view-transition-new(root) { animation-duration: .45s; }
-html.theme-fade .app-shell { animation: themeFade .45s var(--ease-out); }
-@keyframes themeFade { from { opacity: .55; } to { opacity: 1; } }

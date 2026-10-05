@@ -1,26 +1,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const SalatTheme = require('../public/theme.js');
 const SalatCompanion = require('../public/companion.js');
 const { isReminderDue, isWithinSendWindow, cleanReminderMinutes, minutesText } = require('../server.js');
 
 const timings = { Fajr: '05:24', Dhuhr: '12:43', Asr: '16:06', Maghrib: '18:36', Isha: '19:53' };
 const at = (h, m, day = 5) => new Date(2026, 9, day, h, m);
-
-test('auto theme is night from Maghrib until Fajr, day otherwise', () => {
-  assert.equal(SalatTheme.resolve('auto', { timings, now: at(18, 35) }), 'day');
-  assert.equal(SalatTheme.resolve('auto', { timings, now: at(18, 36) }), 'night');
-  assert.equal(SalatTheme.resolve('auto', { timings, now: at(2, 0) }), 'night');
-  assert.equal(SalatTheme.resolve('auto', { timings, now: at(5, 24) }), 'day');
-});
-
-test('fixed modes ignore time; auto without timings follows the phone, then the clock', () => {
-  assert.equal(SalatTheme.resolve('day', { timings, now: at(23, 0) }), 'day');
-  assert.equal(SalatTheme.resolve('night', { timings, now: at(12, 0) }), 'night');
-  assert.equal(SalatTheme.resolve('auto', { now: at(12, 0), systemDark: true }), 'night');
-  assert.equal(SalatTheme.resolve('auto', { now: at(12, 0) }), 'day');
-  assert.equal(SalatTheme.resolve('auto', { now: at(20, 0) }), 'night');
-});
 
 test('marking a prayer toggles it for that day only', () => {
   const day = at(13, 0);

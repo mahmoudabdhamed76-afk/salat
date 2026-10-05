@@ -1,4 +1,4 @@
-// Prayer tracker (صلّيت؟), post-prayer adhkar and theme/reminder settings.
+// Prayer tracker (صلّيت؟), post-prayer adhkar and the pre-prayer reminder setting.
 const SalatCompanion = (() => {
   const PRAYER_KEYS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
   const PRAYER_NAMES = { Fajr: 'الفجر', Dhuhr: 'الظهر', Asr: 'العصر', Maghrib: 'المغرب', Isha: 'العشاء' };
@@ -201,37 +201,6 @@ const SalatCompanion = (() => {
     }
   });
 
-  // ----- theme -----
-  const THEME_ICONS = { auto: '🌗', day: '☀️', night: '🌙' };
-  const THEME_LABELS = { auto: 'تلقائي', day: 'نهاري', night: 'ليلي' };
-  function renderThemeControls() {
-    const mode = SalatTheme.currentMode();
-    $('themeBtn').textContent = THEME_ICONS[mode];
-    $('themeBtn').setAttribute('aria-label', `المظهر: ${THEME_LABELS[mode]} — اضغط للتغيير`);
-    document.querySelectorAll('.theme-option').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
-  }
-  function setTheme(mode) {
-    const swap = () => { SalatTheme.setMode(mode); renderThemeControls(); };
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    // Cross-fade the whole screen where supported; otherwise a short fade on the shell.
-    if (document.startViewTransition && !reduce) { document.startViewTransition(swap); return; }
-    swap();
-    if (!reduce) {
-      document.documentElement.classList.remove('theme-fade');
-      void document.documentElement.offsetWidth;
-      document.documentElement.classList.add('theme-fade');
-    }
-  }
-  $('themeBtn').addEventListener('click', () => {
-    const order = SalatTheme.MODES;
-    const next = order[(order.indexOf(SalatTheme.currentMode()) + 1) % order.length];
-    setTheme(next);
-    say(`المظهر: ${THEME_LABELS[next]}${next === 'auto' ? ' — ليلي من المغرب للفجر' : ''}`);
-  });
-  document.querySelectorAll('.theme-option').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.mode)));
-  document.addEventListener('salat:timings', (e) => SalatTheme.apply(e.detail));
-  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => SalatTheme.apply()); } catch {}
-
   // ----- reminder before prayer -----
   const reminderSelect = $('reminderSelect');
   reminderSelect.innerHTML = REMINDER_OPTIONS.map(v => `<option value="${v}">${v ? `قبلها بـ ${minutesText(v)}` : 'بدون تذكير'}</option>`).join('');
@@ -245,10 +214,15 @@ const SalatCompanion = (() => {
   });
 
   // Day changes at midnight / when returning to the app.
-  setInterval(() => { SalatTheme.apply(); renderTracker(); }, 60 * 1000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { SalatTheme.apply(); renderTracker(); } });
+  setInterval(renderTracker, 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) renderTracker(); });
 
-  renderThemeControls();
+  // Home quick tiles
+  $('quickAdhkarBtn')?.addEventListener('click', () => openAdhkar(null));
+  document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => {
+    if (typeof switchView === 'function') switchView(b.dataset.goto);
+  }));
+
   renderTracker();
   return { ...api, openAdhkar, renderTracker };
 })();

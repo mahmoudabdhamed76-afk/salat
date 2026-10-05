@@ -1,6 +1,6 @@
-const CACHE = 'salat-reminder-v7-offline';
+const CACHE = 'salat-reminder-v8-gold';
 const AUDIO_CACHE = 'salat-audio-v1';
-const ASSETS = ['/', '/styles.css', '/kids.css', '/theme.css', '/companion.css', '/motion.css', '/theme.js', '/companion.js', '/utils.js', '/hadith.js', '/kids.js', '/app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
+const ASSETS = ['/', '/styles.css', '/kids.css', '/companion.css', '/motion.css', '/companion.js', '/fonts/plex-arabic-400.woff2', '/fonts/plex-arabic-500.woff2', '/fonts/plex-arabic-600.woff2', '/fonts/plex-arabic-700.woff2', '/fonts/plex-latin-400.woff2', '/fonts/plex-latin-600.woff2', '/fonts/plex-latin-700.woff2', '/utils.js', '/hadith.js', '/kids.js', '/app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
