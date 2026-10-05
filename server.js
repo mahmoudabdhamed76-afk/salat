@@ -166,6 +166,70 @@ const prayerNames = {
   Isha: 'العشاء'
 };
 
+const SNOOZE_MS = 5 * 60 * 1000;
+// A prayer push is still sent if the server was restarting/redeploying during the exact minute.
+const SEND_WINDOW_MIN = 10;
+
+function hhmmToMinutes(hhmm) {
+  const [h, m] = String(hhmm).split(':').map(Number);
+  return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : NaN;
+}
+
+function isWithinSendWindow(prayerTime, nowHhmm) {
+  const diff = hhmmToMinutes(nowHhmm) - hhmmToMinutes(prayerTime);
+  return diff >= 0 && diff < SEND_WINDOW_MIN;
+}
+
+function pruneLastSent(lastSent, todayKey) {
+  for (const key of Object.keys(lastSent || {})) {
+    if (!key.startsWith(todayKey)) delete lastSent[key];
+  }
+}
+
+// Returns 'ok', 'gone' (subscription expired) or 'error'.
+async function sendPush(item, payload) {
+  try {
+    await webpush.sendNotification(item.subscription, JSON.stringify(payload), { TTL: 300, urgency: 'high' });
+    return 'ok';
+  } catch (err) {
+    if (err.statusCode === 404 || err.statusCode === 410) return 'gone';
+    console.error('[push] send failed:', err.statusCode || '', err.message);
+    return 'error';
+  }
+}
+
+app.post('/api/snooze', (req, res) => {
+  try {
+    const { endpoint, prayer } = req.body || {};
+    if (!endpoint || !prayerNames[prayer]) return res.status(400).json({ error: 'Missing endpoint or prayer' });
+    const items = readSubscriptions();
+    const item = items.find(x => x.subscription?.endpoint === endpoint);
+    if (!item) return res.status(404).json({ error: 'Subscription not found' });
+    item.snooze = { prayer, at: Date.now() + SNOOZE_MS };
+    writeSubscriptions(items);
+    res.json({ ok: true, at: item.snooze.at });
+  } catch (err) {
+    console.error('[snooze]', err.message);
+    res.status(500).json({ error: 'Could not snooze' });
+  }
+});
+
+app.post('/api/snooze/cancel', (req, res) => {
+  try {
+    const endpoint = req.body?.endpoint;
+    if (!endpoint) return res.status(400).json({ error: 'Missing endpoint' });
+    const items = readSubscriptions();
+    const item = items.find(x => x.subscription?.endpoint === endpoint);
+    if (item?.snooze) {
+      delete item.snooze;
+      writeSubscriptions(items);
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Could not cancel snooze' });
+  }
+});
+
 let schedulerBusy = false;
 async function runScheduler() {
   if (schedulerBusy || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return;
@@ -177,16 +241,37 @@ async function runScheduler() {
     for (let i = items.length - 1; i >= 0; i--) {
       const item = items[i];
       try {
+        // Snoozed alarm: delivered by the server so it works while the phone is locked.
+        if (item.snooze && Date.now() >= item.snooze.at) {
+          const { prayer } = item.snooze;
+          delete item.snooze;
+          changed = true;
+          const result = await sendPush(item, {
+            title: `⏰ صلاة ${prayerNames[prayer]} (بعد الغفوة)`,
+            body: `انتهت الغفوة — حان وقت صلاة ${prayerNames[prayer]}`,
+            prayer,
+            prayerName: prayerNames[prayer],
+            tag: `snooze:${prayer}:${Date.now()}`,
+            url: `/?alarm=${prayer}`
+          });
+          if (result === 'gone') {
+            items.splice(i, 1);
+            console.log('[push] Removed expired subscription');
+            continue;
+          }
+          if (result === 'ok') console.log(`[push] snooze ${prayer} sent`);
+        }
+
         const now = localDateParts(item.timeZone || 'Africa/Cairo');
         const timings = await getPrayerTimes(item.lat, item.lng, now.dateApi);
         const prayers = item.enabledPrayers || Object.keys(prayerNames);
 
         for (const prayer of prayers) {
-          if (timings[prayer] !== now.hhmm) continue;
+          if (!isWithinSendWindow(timings[prayer], now.hhmm)) continue;
           const sentKey = `${now.dateKey}:${prayer}`;
           if (item.lastSent?.[sentKey]) continue;
 
-          const payload = JSON.stringify({
+          const result = await sendPush(item, {
             title: `⏰ صلاة ${prayerNames[prayer]}`,
             body: `حان الآن وقت صلاة ${prayerNames[prayer]}`,
             prayer,
@@ -196,20 +281,18 @@ async function runScheduler() {
             url: `/?alarm=${prayer}`
           });
 
-          try {
-            await webpush.sendNotification(item.subscription, payload, { TTL: 300, urgency: 'high' });
+          if (result === 'gone') {
+            items.splice(i, 1);
+            changed = true;
+            console.log('[push] Removed expired subscription');
+            break;
+          }
+          if (result === 'ok') {
             item.lastSent = item.lastSent || {};
+            pruneLastSent(item.lastSent, now.dateKey);
             item.lastSent[sentKey] = new Date().toISOString();
             changed = true;
             console.log(`[push] ${prayer} sent to ${item.subscription.endpoint.slice(0, 40)}...`);
-          } catch (err) {
-            if (err.statusCode === 404 || err.statusCode === 410) {
-              items.splice(i, 1);
-              changed = true;
-              console.log('[push] Removed expired subscription');
-              break;
-            }
-            console.error('[push] send failed:', err.statusCode || '', err.message);
           }
         }
       } catch (err) {

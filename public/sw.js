@@ -1,4 +1,4 @@
-const CACHE = 'salat-reminder-v4-kids-2';
+const CACHE = 'salat-reminder-v5-snooze';
 const ASSETS = ['/', '/styles.css', '/kids.css', '/utils.js', '/hadith.js', '/kids.js', '/app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {

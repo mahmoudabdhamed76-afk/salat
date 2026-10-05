@@ -435,13 +435,38 @@ function stopAlarm() {
 }
 $('stopAlarmBtn').addEventListener('click', stopAlarm);
 el.playAdhanBtn.addEventListener('click', startAdhan);
-$('snoozeBtn').addEventListener('click', () => {
+async function currentPushEndpoint() {
+  try {
+    if (!('serviceWorker' in navigator)) return null;
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager?.getSubscription();
+    return sub?.endpoint || null;
+  } catch { return null; }
+}
+
+async function postSnooze(path, body) {
+  const endpoint = await currentPushEndpoint();
+  if (!endpoint) return false;
+  try {
+    const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint, ...body }) });
+    return res.ok;
+  } catch { return false; }
+}
+
+$('snoozeBtn').addEventListener('click', async () => {
   const text = el.alarmPrayer.textContent.replace('صلاة ', '');
   const p = PRAYERS.find(x => x.name === text) || PRAYERS[0];
   stopAlarm();
   clearTimeout(state.snoozeTimer);
-  state.snoozeTimer = setTimeout(() => showAlarm(p.key, true), 5 * 60 * 1000);
-  toast('تم ضبط الغفوة لمدة 5 دقائق');
+  state.snoozeTimer = setTimeout(() => {
+    // Page still open and visible: ring here and cancel the server push to avoid a duplicate.
+    // If the page is hidden/locked, leave the server snooze so the push notification wakes the phone.
+    if (document.hidden) return;
+    postSnooze('/api/snooze/cancel', {});
+    showAlarm(p.key, true);
+  }, 5 * 60 * 1000);
+  const serverSnooze = await postSnooze('/api/snooze', { prayer: p.key });
+  toast(serverSnooze ? 'تم ضبط الغفوة 5 دقائق — هيوصلك إشعار حتى لو الشاشة مقفولة' : 'تم ضبط الغفوة لمدة 5 دقائق');
 });
 $('testAlarmBtn').addEventListener('click', () => {
   showAlarm(state.nextPrayer?.key || 'Fajr', true);
