@@ -1,0 +1,104 @@
+/* ☀️ Day theme — same soft palette as the kids section (lavender, mint, cream).
+   Night theme is the original look in styles.css and stays untouched. */
+html[data-theme="day"] {
+  --bg:#f7f3ec;
+  --card:rgba(255,255,255,.8);
+  --card-2:#ffffff;
+  --text:#334460;
+  --muted:#6b7590;
+  --line:rgba(87,66,114,.12);
+  --accent:#7655a4;
+  --accent2:#5b7fc4;
+  --ok:#3f9a6c;
+  --danger:#c44a5b;
+  --shadow:0 18px 50px rgba(87,66,114,.14);
+  /* component tokens used by companion.css */
+  --check-line:rgba(87,66,114,.28);
+  --check-ink:#ffffff;
+  --ok-soft:#e1f3e9;
+  --dot-empty:#e6e1ee;
+  --today-bg:#f3edfb;
+  --soft-bg:#eee6f8;
+  --option-on:#efe6fb;
+  --count-bg:#eef2fb;
+  --tap-bg:#f6f1fc;
+  --sheet-bg:#fbf8f1;
+  --scrim:rgba(51,40,72,.35);
+  color-scheme:light;
+}
+html[data-theme="day"], html[data-theme="day"] body {
+  background:radial-gradient(circle at 15% 0%, #ece0ff 0, #f7f3ec 42%, #e7f5ee 100%);
+  background-attachment:fixed;
+  color:var(--text);
+}
+
+/* Header */
+html[data-theme="day"] .eyebrow { color:#8a7aa8; }
+html[data-theme="day"] h1 { color:#473365; }
+html[data-theme="day"] .icon-btn { background:rgba(255,255,255,.75); color:#473365; border-color:var(--line); box-shadow:0 4px 14px rgba(87,66,114,.08); }
+
+/* Hero — like the kids welcome card */
+html[data-theme="day"] .hero-card { background:linear-gradient(135deg,#e8dcfc,#d7f3e7); border-color:rgba(255,255,255,.7); box-shadow:var(--shadow); }
+html[data-theme="day"] .hero-glow { background:radial-gradient(circle, rgba(255,255,255,.75), transparent 64%); }
+html[data-theme="day"] .hero-top, html[data-theme="day"] .next-label { color:#6a6386; }
+html[data-theme="day"] .next-prayer, html[data-theme="day"] .next-time { color:#473365; }
+html[data-theme="day"] .countdown { background:rgba(255,255,255,.7); color:#59407c; border:1px solid rgba(255,255,255,.8); font-weight:700; }
+
+/* Actions */
+html[data-theme="day"] .primary-action { background:linear-gradient(135deg,#8b6bbf,#7655a4); color:#fff; border-color:transparent; box-shadow:0 10px 26px rgba(118,85,164,.28); }
+html[data-theme="day"] .secondary-action { background:rgba(255,255,255,.8); color:#334460; box-shadow:0 8px 22px rgba(87,66,114,.08); }
+html[data-theme="day"] .section-card { box-shadow:0 10px 30px rgba(87,66,114,.08); }
+html[data-theme="day"] .text-btn { color:#7655a4; font-weight:700; }
+html[data-theme="day"] .pill-btn { background:linear-gradient(135deg,#8b6bbf,#7655a4); }
+html[data-theme="day"] .danger-btn { background:#fbe9eb; color:#b23b4c; border-color:#f1c9cf; }
+html[data-theme="day"] .soft-btn { color:#59407c; border-color:#ddd3ea; }
+
+/* Prayer list */
+html[data-theme="day"] .prayer-dot { background:#d6cde4; }
+html[data-theme="day"] .prayer-row.next { color:#473365; }
+html[data-theme="day"] .prayer-row.next .prayer-dot { background:#7655a4; box-shadow:0 0 0 5px rgba(118,85,164,.14); }
+html[data-theme="day"] .fine-print { color:#7d8699; }
+
+/* Qibla */
+html[data-theme="day"] .qibla-card { background:linear-gradient(160deg,#fbf8f1,#efe6fb); box-shadow:var(--shadow); }
+html[data-theme="day"] .compass { background:radial-gradient(circle, #ffffff, #f3edfb 55%, #e9e0f6); box-shadow:inset 0 0 0 1px rgba(87,66,114,.12), 0 20px 50px rgba(87,66,114,.16); }
+html[data-theme="day"] .compass-ring { border-color:rgba(87,66,114,.22); }
+html[data-theme="day"] .dir { color:#8a7aa8; }
+html[data-theme="day"] .kaaba { background:#473365; border-color:transparent; }
+html[data-theme="day"] .qibla-arrow { color:#7655a4; text-shadow:0 8px 24px rgba(118,85,164,.3); }
+
+/* Settings controls */
+html[data-theme="day"] .slider { background:#ddd6e8; }
+html[data-theme="day"] .settings-select,
+html[data-theme="day"] .hadith-controls input,
+html[data-theme="day"] .hadith-controls select { color-scheme:light; border-color:#ddd3ea; background:#fff; }
+
+/* Hadith */
+html[data-theme="day"] .daily-hadith-card { border-color:#cdebdc; }
+html[data-theme="day"] .hadith-category { background:#efe6fb; color:#6a4f96; }
+html[data-theme="day"] .hadith-grade { background:#e1f3e9; color:#2f7a55; }
+html[data-theme="day"] .hadith-source { color:#6a4f96; }
+
+/* Bottom navigation */
+html[data-theme="day"] .bottom-nav { background:rgba(255,255,255,.9); border-color:rgba(87,66,114,.1); box-shadow:0 14px 40px rgba(87,66,114,.16); }
+html[data-theme="day"] .nav-btn { color:#8a8fa3; }
+html[data-theme="day"] .nav-btn.active { color:#59407c; background:#efe6fb; }
+
+/* Alarm screen */
+html[data-theme="day"] .alarm-screen { background:radial-gradient(circle at 50% 36%, #f6f0ff 0, #e8dcfc 42%, #d7f3e7 100%); color:#473365; }
+html[data-theme="day"] .alarm-stars { opacity:.5; background-image:radial-gradient(circle at 20% 15%, #a48ad1 0 1.3px, transparent 2px), radial-gradient(circle at 80% 25%, #a48ad1 0 1.3px, transparent 2px), radial-gradient(circle at 45% 70%, #8fcfb0 0 1.3px, transparent 2px); }
+html[data-theme="day"] .alarm-head { color:#59407c; }
+html[data-theme="day"] .moon { color:#a186cf; opacity:1; }
+html[data-theme="day"] .alarm-audio-status { color:#6a6386; }
+html[data-theme="day"] .play-adhan-btn { background:rgba(255,255,255,.75); color:#473365; border-color:#ddd3ea; }
+html[data-theme="day"] .snooze-btn { background:#9a7cbd; }
+html[data-theme="day"] .stop-btn { background:#7655a4; }
+
+/* Misc */
+html[data-theme="day"] .toast { background:#473365; color:#fff; box-shadow:0 15px 40px rgba(71,51,101,.3); }
+html[data-theme="day"] .kids-footer-note { color:#8a8fa3; }
+html[data-theme="day"] button:focus-visible,
+html[data-theme="day"] a:focus-visible,
+html[data-theme="day"] input:focus-visible,
+html[data-theme="day"] select:focus-visible { outline-color:#7655a4; }
+

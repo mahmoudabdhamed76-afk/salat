@@ -78,13 +78,18 @@ function renderToggles() {
 }
 
 function renderPrayerList() {
+  const tracker = typeof SalatCompanion !== 'undefined' ? SalatCompanion : null;
+  const nowMin = getNowMinutes();
   el.prayerList.innerHTML = PRAYERS.map(p => {
     const enabled = state.enabledPrayers.includes(p.key);
     const isNext = state.nextPrayer?.key === p.key;
     const time = SalatUtils.formatTime(state.timings?.[p.key]);
-    return `<div class="prayer-row ${isNext ? 'next' : ''}">
-      <div class="prayer-meta"><span class="prayer-dot"></span><div><b>${p.name}</b><div class="muted" style="font-size:11px;margin-top:3px">${enabled ? 'التنبيه مفعّل' : 'التنبيه متوقف'}</div></div></div>
-      <div class="prayer-time">${time}</div>
+    const prayed = tracker ? tracker.isPrayed(p.key) : false;
+    const arrived = Boolean(state.timings?.[p.key]) && minutesOf(state.timings[p.key]) <= nowMin;
+    const check = tracker ? `<button class="pray-check${prayed ? ' done' : ''}" data-pray="${p.key}" aria-pressed="${prayed}" ${arrived || prayed ? '' : 'disabled'} aria-label="${prayed ? `إلغاء تسجيل صلاة ${p.name}` : `صلّيت ${p.name}`}" title="${arrived || prayed ? 'صلّيت؟' : 'لم يدخل الوقت بعد'}">✓</button>` : '';
+    return `<div class="prayer-row ${isNext ? 'next' : ''} ${prayed ? 'prayed' : ''}">
+      <div class="prayer-meta"><span class="prayer-dot"></span><div><b>${p.name}</b><div class="muted" style="font-size:11px;margin-top:3px">${prayed ? '✓ صلّيت — تقبّل الله' : enabled ? 'التنبيه مفعّل' : 'التنبيه متوقف'}</div></div></div>
+      <div class="prayer-end"><div class="prayer-time">${time}</div>${check}</div>
     </div>`;
   }).join('');
 }
@@ -130,6 +135,8 @@ async function loadTimes() {
     if (!res.ok) throw new Error('timings failed');
     const data = await res.json();
     state.timings = data.timings;
+    SalatUtils.saveSetting('salat.lastTimings', JSON.stringify(data.timings));
+    document.dispatchEvent(new CustomEvent('salat:timings', { detail: data.timings }));
     updateNextPrayer();
   } catch (err) {
     toast('تعذر تحميل مواقيت الصلاة الآن');
@@ -220,7 +227,10 @@ async function syncPushSubscription(interactive = true) {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo';
   const res = await fetch('/api/subscriptions', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ subscription: sub, lat: state.coords.lat, lng: state.coords.lng, timeZone: tz, enabledPrayers: state.enabledPrayers })
+    body: JSON.stringify({
+      subscription: sub, lat: state.coords.lat, lng: state.coords.lng, timeZone: tz, enabledPrayers: state.enabledPrayers,
+      reminderMinutes: typeof SalatCompanion !== 'undefined' ? SalatCompanion.reminderMinutes() : 10
+    })
   });
   if (interactive) toast(res.ok ? 'تم تفعيل تنبيهات الصلاة ✅' : 'تعذر حفظ إعداد التنبيهات');
 }

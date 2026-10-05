@@ -12,6 +12,9 @@
   <link rel="apple-touch-icon" href="/icons/icon-192.png" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="stylesheet" href="/kids.css" />
+  <link rel="stylesheet" href="/theme.css" />
+  <link rel="stylesheet" href="/companion.css" />
+  <script src="/theme.js"></script>
 </head>
 <body>
   <main class="app-shell">
@@ -20,7 +23,10 @@
         <p class="eyebrow">تذكير الصلاة</p>
         <h1>صلاتي</h1>
       </div>
-      <button id="settingsBtn" class="icon-btn" aria-label="الإعدادات">⚙️</button>
+      <div class="topbar-actions">
+        <button id="themeBtn" class="icon-btn" aria-label="المظهر">🌗</button>
+        <button id="settingsBtn" class="icon-btn" aria-label="الإعدادات">⚙️</button>
+      </div>
     </header>
 
     <section id="homeView" class="view active">
@@ -53,6 +59,17 @@
           <button id="testAlarmBtn" class="text-btn">تجربة المنبّه</button>
         </div>
         <div id="prayerList" class="prayer-list"></div>
+        <p class="fine-print prayer-hint">صلّيت؟ اضغط ✓ بجوار الصلاة لتسجيلها.</p>
+      </section>
+
+      <section id="trackerCard" class="section-card tracker-card" aria-labelledby="trackerHeading">
+        <div class="section-title-row">
+          <h2 id="trackerHeading">متابعة صلاتي</h2>
+          <span id="trackerToday" class="tracker-today"></span>
+        </div>
+        <div id="trackerWeek" class="tracker-week" aria-label="آخر ٧ أيام"></div>
+        <p id="trackerStreak" class="tracker-streak" role="status"></p>
+        <button id="openAdhkarBtn" class="soft-btn wide">📿 أذكار بعد الصلاة</button>
       </section>
 
       <section class="section-card daily-hadith-card" aria-labelledby="dailyHadithHeading">
@@ -154,6 +171,14 @@
 
     <section id="settingsView" class="view">
       <article class="section-card settings-card">
+        <div class="section-title-row"><h2>المظهر</h2><span aria-hidden="true">🎨</span></div>
+        <div class="theme-options" role="group" aria-label="اختر المظهر">
+          <button class="theme-option" data-mode="auto" aria-pressed="false"><span>🌗</span><b>تلقائي</b><small>ليلي من المغرب للفجر</small></button>
+          <button class="theme-option" data-mode="day" aria-pressed="false"><span>☀️</span><b>نهاري</b><small>بألوان قسم الطفل</small></button>
+          <button class="theme-option" data-mode="night" aria-pressed="false"><span>🌙</span><b>ليلي</b><small>الكحلي الهادئ</small></button>
+        </div>
+      </article>
+      <article class="section-card settings-card">
         <div class="section-title-row"><h2>صوت الأذان</h2><span aria-hidden="true">🔊</span></div>
         <label for="adhanVoiceSelect" class="field-label">اختر المؤذن</label>
         <select id="adhanVoiceSelect" class="settings-select"></select>
@@ -167,6 +192,9 @@
         <div class="section-title-row"><h2>إعدادات الصلاة</h2></div>
         <p class="muted">اختر الصلوات التي تريد إشعارًا عند دخول وقتها.</p>
         <div id="prayerToggles" class="toggle-list"></div>
+        <label for="reminderSelect" class="field-label">تذكير قبل الصلاة</label>
+        <select id="reminderSelect" class="settings-select"></select>
+        <p class="fine-print reminder-note">إشعار خفيف قبل الأذان، ثم المنبّه عند دخول الوقت.</p>
         <button id="refreshTimesBtn" class="pill-btn wide">تحديث المواقيت</button>
         <button id="disableNotificationsBtn" class="danger-btn wide">إيقاف التنبيهات</button>
         <p class="fine-print">لتنبيهات أفضل على iPhone: أضف التطبيق إلى الشاشة الرئيسية ثم افتحه واسمح بالإشعارات.</p>
@@ -198,6 +226,26 @@
     </div>
   </div>
 
+  <div id="adhkarSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adhkarTitle" hidden>
+    <div class="sheet-panel">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <div>
+          <p class="eyebrow">اضغط على الذكر بعد قوله</p>
+          <h2 id="adhkarTitle">أذكار بعد الصلاة</h2>
+        </div>
+        <button id="closeAdhkarBtn" class="icon-btn" aria-label="إغلاق">✕</button>
+      </div>
+      <div class="adhkar-progress" aria-hidden="true"><span id="adhkarProgress"></span></div>
+      <div id="adhkarList" class="adhkar-list"></div>
+      <p id="adhkarDone" class="adhkar-done" role="status" hidden>تقبّل الله منك ✨ أتممت أذكار الصلاة</p>
+      <div class="sheet-foot">
+        <label class="sheet-check"><input id="adhkarAuto" type="checkbox" checked /> افتحها تلقائيًا بعد تسجيل الصلاة</label>
+        <button id="resetAdhkarBtn" class="text-btn">إعادة العدّ</button>
+      </div>
+    </div>
+  </div>
+
   <audio id="adhanAudio" preload="none" playsinline></audio>
   <audio id="previewAudio" preload="none" playsinline></audio>
 
@@ -205,6 +253,7 @@
   <script src="/utils.js" defer></script>
   <script src="/hadith.js" defer></script>
   <script src="/kids.js" defer></script>
+  <script src="/companion.js" defer></script>
   <script src="/app.js" defer></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
-const CACHE = 'salat-reminder-v5-snooze';
-const ASSETS = ['/', '/styles.css', '/kids.css', '/utils.js', '/hadith.js', '/kids.js', '/app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
+const CACHE = 'salat-reminder-v6-companion';
+const ASSETS = ['/', '/styles.css', '/kids.css', '/theme.css', '/companion.css', '/theme.js', '/companion.js', '/utils.js', '/hadith.js', '/kids.js', '/app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
@@ -30,6 +30,18 @@ self.addEventListener('push', (event) => {
   let data = { title: '⏰ حان وقت الصلاة', body: 'افتح التطبيق لمعرفة الصلاة الحالية', url: '/' };
   try { if (event.data) data = { ...data, ...event.data.json() }; } catch {}
 
+  if (data.kind === 'reminder') {
+    event.waitUntil(self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      tag: data.tag || 'prayer-reminder',
+      vibrate: [200, 120, 200],
+      data: { url: '/', kind: 'reminder' }
+    }));
+    return;
+  }
+
   event.waitUntil(self.registration.showNotification(data.title, {
     body: data.body,
     icon: '/icons/icon-192.png',
@@ -45,6 +57,14 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  if (event.notification.data?.kind === 'reminder') {
+    event.waitUntil((async () => {
+      const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const client = allClients.find(c => 'focus' in c);
+      return client ? client.focus() : clients.openWindow('/');
+    })());
+    return;
+  }
   const prayer = event.notification.data?.prayer || '';
   const baseUrl = event.notification.data?.url || '/';
   const target = new URL(baseUrl, self.location.origin);

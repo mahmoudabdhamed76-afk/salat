@@ -2,6 +2,7 @@ const express = require('express');
 const webpush = require('web-push');
 const fs = require('fs');
 const path = require('path');
+const SalatUtils = require('./public/utils.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -116,7 +117,7 @@ app.get('/api/timings', async (req, res) => {
 
 app.post('/api/subscriptions', (req, res) => {
   try {
-    const { subscription, lat, lng, timeZone, enabledPrayers } = req.body || {};
+    const { subscription, lat, lng, timeZone, enabledPrayers, reminderMinutes } = req.body || {};
     const latitude = Number(lat);
     const longitude = Number(lng);
 
@@ -132,6 +133,8 @@ app.post('/api/subscriptions', (req, res) => {
       lng: longitude,
       timeZone: timeZone || 'Africa/Cairo',
       enabledPrayers: cleanPrayers.length ? cleanPrayers : ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'],
+      reminderMinutes: cleanReminderMinutes(reminderMinutes, existingIndex >= 0 ? items[existingIndex].reminderMinutes : 0),
+      snooze: existingIndex >= 0 ? items[existingIndex].snooze : undefined,
       lastSent: existingIndex >= 0 ? (items[existingIndex].lastSent || {}) : {},
       updatedAt: new Date().toISOString()
     };
@@ -178,6 +181,25 @@ function hhmmToMinutes(hhmm) {
 function isWithinSendWindow(prayerTime, nowHhmm) {
   const diff = hhmmToMinutes(nowHhmm) - hhmmToMinutes(prayerTime);
   return diff >= 0 && diff < SEND_WINDOW_MIN;
+}
+
+const REMINDER_OPTIONS = [0, 5, 10, 15, 20, 30];
+function cleanReminderMinutes(value, fallback = 0) {
+  if (value === undefined || value === null || value === '') return REMINDER_OPTIONS.includes(fallback) ? fallback : 0;
+  const n = Number(value);
+  return REMINDER_OPTIONS.includes(n) ? n : 0;
+}
+
+// Pre-prayer reminder: due from (prayer - N min) for a few minutes, and always before the adhan itself.
+function isReminderDue(prayerTime, nowHhmm, minutesBefore) {
+  if (!minutesBefore) return false;
+  const diff = hhmmToMinutes(nowHhmm) - (hhmmToMinutes(prayerTime) - minutesBefore);
+  return diff >= 0 && diff < Math.min(5, minutesBefore);
+}
+
+function minutesText(n) {
+  const digits = new Intl.NumberFormat('ar-EG', { useGrouping: false }).format(n);
+  return n >= 3 && n <= 10 ? `${digits} دقائق` : `${digits} دقيقة`;
 }
 
 function pruneLastSent(lastSent, todayKey) {
@@ -267,6 +289,31 @@ async function runScheduler() {
         const prayers = item.enabledPrayers || Object.keys(prayerNames);
 
         for (const prayer of prayers) {
+          const preKey = `${now.dateKey}:${prayer}:pre`;
+          if (isReminderDue(timings[prayer], now.hhmm, item.reminderMinutes) && !item.lastSent?.[preKey]) {
+            const result = await sendPush(item, {
+              kind: 'reminder',
+              title: `🕌 اقتربت صلاة ${prayerNames[prayer]}`,
+              body: `باقي ${minutesText(item.reminderMinutes)} على الأذان — ${SalatUtils.formatTime(timings[prayer])}`,
+              prayer,
+              tag: preKey,
+              url: '/'
+            });
+            if (result === 'gone') {
+              items.splice(i, 1);
+              changed = true;
+              console.log('[push] Removed expired subscription');
+              break;
+            }
+            if (result === 'ok') {
+              item.lastSent = item.lastSent || {};
+              pruneLastSent(item.lastSent, now.dateKey);
+              item.lastSent[preKey] = new Date().toISOString();
+              changed = true;
+              console.log(`[push] ${prayer} reminder sent`);
+            }
+          }
+
           if (!isWithinSendWindow(timings[prayer], now.hhmm)) continue;
           const sentKey = `${now.dateKey}:${prayer}`;
           if (item.lastSent?.[sentKey]) continue;
@@ -306,9 +353,12 @@ async function runScheduler() {
   }
 }
 
-setInterval(runScheduler, 30 * 1000);
-setTimeout(runScheduler, 5000);
+if (require.main === module) {
+  setInterval(runScheduler, 30 * 1000);
+  setTimeout(runScheduler, 5000);
+  app.listen(PORT, () => {
+    console.log(`Salat Reminder running on port ${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`Salat Reminder running on port ${PORT}`);
-});
+module.exports = { app, isWithinSendWindow, isReminderDue, cleanReminderMinutes, minutesText };
