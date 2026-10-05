@@ -1,5 +1,5 @@
-const CACHE = 'salat-reminder-v2';
-const ASSETS = ['/', '/styles.css', '/app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
+const CACHE = 'salat-reminder-v3-hadith-1';
+const ASSETS = ['/', '/styles.css', '/hadith.js', '/app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));

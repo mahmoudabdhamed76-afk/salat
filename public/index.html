@@ -53,6 +53,14 @@
         </div>
         <div id="prayerList" class="prayer-list"></div>
       </section>
+
+      <section class="section-card daily-hadith-card" aria-labelledby="dailyHadithHeading">
+        <div class="section-title-row">
+          <h2 id="dailyHadithHeading">حديث اليوم</h2>
+          <button id="browseHadithBtn" class="text-btn">كل الأحاديث</button>
+        </div>
+        <div id="dailyHadith"></div>
+      </section>
     </section>
 
     <section id="qiblaView" class="view">
@@ -76,6 +84,30 @@
       </article>
     </section>
 
+    <section id="hadithView" class="view" aria-labelledby="hadithHeading">
+      <section class="section-card hadith-intro">
+        <p class="eyebrow">من هدي النبي ﷺ</p>
+        <h2 id="hadithHeading">أحاديث نبوية</h2>
+        <p class="muted">أحاديث مختارة من صحيحي البخاري ومسلم، مع الراوي ورقم الحديث ومصدره.</p>
+        <div class="hadith-controls">
+          <label for="hadithSearch">ابحث في الأحاديث</label>
+          <input id="hadithSearch" type="search" placeholder="كلمة من الحديث أو اسم الراوي" autocomplete="off" />
+          <label for="hadithCategory">الموضوع</label>
+          <select id="hadithCategory">
+            <option value="">كل المواضيع</option>
+            <option value="الصلاة">الصلاة</option>
+            <option value="القرآن">القرآن</option>
+            <option value="الأخلاق">الأخلاق</option>
+            <option value="الإيمان">الإيمان</option>
+            <option value="الذكر والطهارة">الذكر والطهارة</option>
+          </select>
+        </div>
+        <p id="hadithCount" class="fine-print" role="status" aria-live="polite"></p>
+      </section>
+      <div id="hadithList" class="hadith-list"></div>
+      <p id="hadithEmpty" class="section-card muted hadith-empty" hidden>لا توجد أحاديث تطابق بحثك. جرّب كلمة أخرى أو اختر كل المواضيع.</p>
+    </section>
+
     <section id="settingsView" class="view">
       <article class="section-card settings-card">
         <div class="section-title-row"><h2>إعدادات الصلاة</h2></div>
@@ -90,6 +122,7 @@
     <nav class="bottom-nav" aria-label="التنقل">
       <button class="nav-btn active" data-view="homeView"><span>🕌</span><small>الصلاة</small></button>
       <button class="nav-btn" data-view="qiblaView"><span>🧭</span><small>القبلة</small></button>
+      <button class="nav-btn" data-view="hadithView"><span>📖</span><small>الأحاديث</small></button>
       <button class="nav-btn" data-view="settingsView"><span>⚙️</span><small>الإعدادات</small></button>
     </nav>
   </main>
@@ -116,6 +149,7 @@
   </audio>
 
   <div id="toast" class="toast"></div>
+  <script src="/hadith.js" defer></script>
   <script src="/app.js" defer></script>
 </body>
 </html>
