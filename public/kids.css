@@ -1,0 +1,70 @@
+#kidsView { --kid-ink:#334460; --kid-muted:#63728a; --kid-purple:#7254a7; color:var(--kid-ink); }
+.kids-welcome { position:relative; overflow:hidden; border-radius:28px; padding:24px; background:linear-gradient(135deg,#e8dcfc,#d7f3e7); }
+.kids-welcome .eyebrow { position:relative; color:#6a6386; font-size:12px; margin-bottom:10px; }
+.kids-welcome h2 { position:relative; font-size:28px; color:#473365; margin-bottom:8px; }
+.kids-welcome > p:not(.eyebrow) { position:relative; font-size:14px; margin-bottom:18px; }
+.kids-sky { position:absolute; inset:0; pointer-events:none; }
+.kids-sky span { position:absolute; color:#a48ad1; font-size:26px; animation:kidTwinkle 3s ease-in-out infinite; }
+.kids-sky span:nth-child(1) { left:20px; top:22px; }
+.kids-sky span:nth-child(2) { left:80px; top:75px; animation-delay:.7s; }
+.kids-sky span:nth-child(3) { left:28px; bottom:18px; animation-delay:1.3s; }
+.kids-rewards { display:flex; flex-wrap:wrap; gap:8px; position:relative; }
+.kids-rewards span { background:rgba(255,255,255,.65); border:1px solid rgba(255,255,255,.7); border-radius:999px; padding:8px 12px; font-size:12px; font-weight:700; }
+.kids-topics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin:14px 0; }
+.kids-topic { position:relative; display:grid; gap:4px; justify-items:center; padding:13px 4px; border:2px solid transparent; border-radius:18px; color:#56617b; background:#eef0f8; cursor:pointer; min-height:99px; }
+.kids-topic > span { font-size:24px; }
+.kids-topic b { font-size:13px; }
+.kids-topic small { font-size:10px; }
+.kids-topic.selected { background:#e8dcfc; color:#59407c; border-color:#a186cf; }
+.kids-topic.completed::after { content:'✓'; position:absolute; top:4px; left:5px; width:17px; height:17px; display:grid; place-items:center; background:#cff0df; color:#276e50; border-radius:50%; font-size:11px; font-weight:800; }
+.kids-lesson, .kids-quiz { background:#fbf8f1; border:1px solid #ede8dc; border-radius:26px; padding:20px; overflow:hidden; }
+.kids-lesson-top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.kids-lesson-top h3 { margin:0; font-size:18px; }
+.kids-lesson-top > span { flex-shrink:0; font-size:12px; color:var(--kid-muted); background:#eeeaf5; padding:6px 10px; border-radius:999px; }
+.kids-step-dots { display:flex; gap:4px; margin:13px 0 6px; }
+.kids-step-dots span { flex:1; height:4px; background:#e2deea; border-radius:99px; }
+.kids-step-dots span.seen { background:#9a7cbd; }
+.kids-scene { background:#fbf4e8; border-radius:20px; overflow:hidden; margin:14px 0 18px; }
+.kids-scene svg { width:100%; max-height:250px; display:block; }
+.kids-step-copy h3 { color:#574272; margin:0 0 9px; font-size:21px; }
+.kids-step-copy > p { line-height:1.85; font-size:15px; margin-bottom:14px; }
+.kids-step-copy .kids-words { color:#386b57; background:#e4f3eb; padding:10px 13px; border-radius:14px; font-weight:700; font-size:15px; }
+.kids-playback { display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; align-items:center; margin:16px 0; }
+.kids-auto { border:1px solid #ddd3ea; color:#665083; background:#eee6f8; border-radius:12px; padding:11px 13px; font-size:12px; font-weight:700; cursor:pointer; min-height:42px; }
+.kids-motion { display:flex; gap:5px; align-items:center; font-size:11px; color:var(--kid-muted); cursor:pointer; }
+.kids-motion input { accent-color:var(--kid-purple); width:16px; height:16px; }
+.kids-step-actions { display:grid; grid-template-columns:.8fr 1.2fr; gap:10px; }
+.kids-back, .kids-next { min-height:48px; border-radius:14px; padding:12px 8px; border:0; font-weight:800; font-size:14px; cursor:pointer; }
+.kids-back { background:#eeebe4; color:#646573; }
+.kids-next { background:#7655a4; color:white; box-shadow:0 6px 16px #7655a425; }
+.kids-parent-note { line-height:1.8; font-size:11px; color:var(--kid-muted); margin:16px 0 8px; }
+.kids-source { color:#735694; font-size:11px; text-underline-offset:3px; }
+.kids-celebration { background:#dff2e4; color:#3e7751; border-radius:13px; padding:14px; margin:14px 0 0; font-weight:700; font-size:14px; line-height:1.8; animation:kidPop .4s ease; }
+.kids-quiz { margin-top:14px; }
+.kids-question { font-size:18px; font-weight:700; margin:20px 0 14px; line-height:1.8; }
+.kids-answers { display:grid; gap:9px; }
+.kids-answer { border:1px solid #ddd6e8; border-radius:14px; background:white; color:#52607a; text-align:right; min-height:48px; padding:12px 14px; cursor:pointer; font-size:14px; line-height:1.6; }
+.kids-answer.correct { background:#dff1e5; border-color:#79b490; color:#2c6945; opacity:1; }
+.kids-answer.try-again { background:#f5e7d7; border-color:#e2c59f; }
+.kids-feedback { min-height:24px; margin:14px 0 10px; font-size:13px; color:var(--kid-muted); line-height:1.8; }
+.kids-feedback.success { color:#387451; }
+.kids-footer-note { color:#a6b6c7; font-size:12px; line-height:1.8; text-align:center; margin:16px 12px 0; }
+.kids-cloud { animation:kidDrift 5s ease-in-out infinite alternate; }
+.kids-cloud.second { animation-delay:-2s; }
+.kids-art { transform-origin:center; animation:kidPop .5s ease-out; }
+.kids-person { animation:kidBreathe 3.5s ease-in-out infinite; transform-origin:180px 235px; }
+.kids-water { animation:kidWater 1.1s linear infinite; }
+.kids-focus-ring { animation:kidTwinkle 2s ease-in-out infinite; }
+.kids-sparkle { animation:kidTwinkle 2.7s ease-in-out infinite; }
+.kids-float, .kids-coin { animation:kidFloat 3s ease-in-out infinite; }
+.kids-heart { animation:kidBreathe 2s ease-in-out infinite; transform-origin:180px 167px; }
+.kids-salam-wave { animation:kidTwinkle 1.6s ease-in-out infinite; }
+#kidsView.still *, #kidsView.still *::before, #kidsView.still *::after { animation:none !important; transition:none !important; }
+#kidsView button:focus-visible, #kidsView a:focus-visible, #kidsView input:focus-visible { outline-color:#674c95; }
+@keyframes kidDrift { to { transform:translateX(9px); } }
+@keyframes kidFloat { 50% { transform:translateY(-8px); } }
+@keyframes kidTwinkle { 50% { opacity:.4; } }
+@keyframes kidWater { from { transform:translateY(-4px); opacity:.35; } to { transform:translateY(9px); opacity:1; } }
+@keyframes kidBreathe { 50% { transform:scale(1.015); } }
+@keyframes kidPop { from { transform:translateY(9px); opacity:0; } to { transform:none; opacity:1; } }
+@media (max-width:360px) { .kids-lesson, .kids-quiz { padding:16px; } .kids-topic small { font-size:9px; } .kids-playback { gap:8px; } }

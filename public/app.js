@@ -15,10 +15,13 @@ const state = {
   heading: 0,
   audioCtx: null,
   alarmTimer: null,
-  snoozeTimer: null
+  snoozeTimer: null,
+  voice: SalatUtils.readSetting('salat.voice', 'alafasy'),
+  volume: Math.min(1, Math.max(.1, Number(SalatUtils.readSetting('salat.volume', '1')) || 1))
 };
 
 const $ = (id) => document.getElementById(id);
+let adhanAttempt = 0;
 const el = {
   locationLabel: $('locationLabel'), todayLabel: $('todayLabel'), nextPrayerName: $('nextPrayerName'),
   nextPrayerTime: $('nextPrayerTime'), countdown: $('countdown'), prayerList: $('prayerList'),
@@ -37,7 +40,13 @@ function toast(msg) {
 
 function switchView(viewId) {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === viewId));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === viewId));
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === viewId);
+    if (b.dataset.view === viewId) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
+  });
+  if (viewId !== 'settingsView') stopPreview();
+  document.dispatchEvent(new CustomEvent('salat:viewchange', { detail: viewId }));
 }
 
 document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
@@ -72,7 +81,7 @@ function renderPrayerList() {
   el.prayerList.innerHTML = PRAYERS.map(p => {
     const enabled = state.enabledPrayers.includes(p.key);
     const isNext = state.nextPrayer?.key === p.key;
-    const time = state.timings?.[p.key] || '--:--';
+    const time = SalatUtils.formatTime(state.timings?.[p.key]);
     return `<div class="prayer-row ${isNext ? 'next' : ''}">
       <div class="prayer-meta"><span class="prayer-dot"></span><div><b>${p.name}</b><div class="muted" style="font-size:11px;margin-top:3px">${enabled ? 'التنبيه مفعّل' : 'التنبيه متوقف'}</div></div></div>
       <div class="prayer-time">${time}</div>
@@ -103,7 +112,7 @@ function updateNextPrayer() {
 
   state.nextPrayer = next;
   el.nextPrayerName.textContent = `صلاة ${next.name}`;
-  el.nextPrayerTime.textContent = next.time;
+  el.nextPrayerTime.textContent = SalatUtils.formatTime(next.time);
   const h = Math.floor(diff / 60);
   const m = Math.max(0, Math.floor(diff % 60));
   el.countdown.textContent = h > 0 ? `متبقي ${h} س و ${m} د` : `متبقي ${m} دقيقة`;
@@ -275,17 +284,94 @@ async function primeAdhanAudio() {
     // Priming is best-effort. The alarm screen still exposes a manual play button.
   } finally {
     audio.muted = false;
-    audio.volume = 1;
+    audio.volume = state.volume;
   }
 }
 
 function stopAdhan() {
+  adhanAttempt++;
   if (!el.adhanAudio) return;
   try {
     el.adhanAudio.pause();
     el.adhanAudio.currentTime = 0;
   } catch (_) {}
 }
+
+const previewAudio = $('previewAudio');
+let previewAttempt = 0;
+function stopPreview() {
+  previewAttempt++;
+  previewAudio.pause();
+  previewAudio.currentTime = 0;
+  if ($('previewAdhanBtn').getAttribute('aria-pressed') === 'true') $('previewAdhanStatus').textContent = 'تم إيقاف المعاينة.';
+  $('previewAdhanBtn').textContent = '▶ استمع للصوت';
+  $('previewAdhanBtn').setAttribute('aria-pressed', 'false');
+}
+
+function selectedVoice() {
+  return SalatUtils.voices.find(voice => voice.id === state.voice) || SalatUtils.voices[0];
+}
+
+function configureAdhan() {
+  stopPreview();
+  stopAdhan();
+  const voice = selectedVoice();
+  el.adhanAudio.src = voice.url;
+  previewAudio.src = voice.url;
+  el.adhanAudio.volume = previewAudio.volume = state.volume;
+  $('adhanVoiceSelect').value = voice.id;
+  $('adhanVolume').value = Math.round(state.volume * 100);
+  $('adhanVolumeValue').textContent = `${Math.round(state.volume * 100).toLocaleString('ar-EG')}٪`;
+}
+
+SalatUtils.voices.forEach(voice => {
+  const option = document.createElement('option');
+  option.value = voice.id;
+  option.textContent = voice.name;
+  $('adhanVoiceSelect').append(option);
+});
+configureAdhan();
+$('adhanVoiceSelect').addEventListener('change', () => {
+  state.voice = $('adhanVoiceSelect').value;
+  const saved = SalatUtils.saveSetting('salat.voice', state.voice);
+  configureAdhan();
+  $('previewAdhanStatus').textContent = saved ? 'تم حفظ الصوت. اضغط للاستماع وتجربته.' : 'تم تغيير الصوت لهذه الزيارة؛ تعذر حفظه على الجهاز.';
+});
+$('adhanVolume').addEventListener('input', () => {
+  state.volume = Number($('adhanVolume').value) / 100;
+  el.adhanAudio.volume = previewAudio.volume = state.volume;
+  $('adhanVolumeValue').textContent = `${Math.round(state.volume * 100).toLocaleString('ar-EG')}٪`;
+  SalatUtils.saveSetting('salat.volume', String(state.volume));
+});
+$('previewAdhanBtn').addEventListener('click', async () => {
+  if ($('previewAdhanBtn').getAttribute('aria-pressed') === 'true') {
+    stopPreview();
+    $('previewAdhanStatus').textContent = 'تم إيقاف المعاينة.';
+    return;
+  }
+  const attempt = ++previewAttempt;
+  $('previewAdhanBtn').textContent = '■ إيقاف الصوت';
+  $('previewAdhanBtn').setAttribute('aria-pressed', 'true');
+  $('previewAdhanStatus').textContent = 'جاري تحميل الصوت…';
+  try {
+    await previewAudio.play();
+    if (attempt !== previewAttempt) return;
+    $('previewAdhanStatus').textContent = `تستمع الآن إلى: ${selectedVoice().name}`;
+  } catch {
+    if (attempt !== previewAttempt) return;
+    stopPreview();
+    $('previewAdhanStatus').textContent = 'تعذر تشغيل التسجيل. تحقق من الإنترنت أو جرّب صوتًا آخر.';
+  }
+});
+previewAudio.addEventListener('ended', () => {
+  stopPreview();
+  $('previewAdhanStatus').textContent = 'انتهت المعاينة.';
+});
+previewAudio.addEventListener('error', () => {
+  if ($('previewAdhanBtn').getAttribute('aria-pressed') !== 'true') return;
+  stopPreview();
+  $('previewAdhanStatus').textContent = 'تعذر تحميل التسجيل. تحقق من الإنترنت أو جرّب صوتًا آخر.';
+});
 
 async function startAdhan() {
   const audio = el.adhanAudio;
@@ -297,18 +383,21 @@ async function startAdhan() {
   }
 
   stopAdhan();
+  const attempt = adhanAttempt;
   audio.muted = false;
-  audio.volume = 1;
+  audio.volume = state.volume;
   el.alarmAudioStatus.textContent = 'جاري تشغيل الأذان…';
   el.playAdhanBtn.hidden = true;
 
   try {
     const playPromise = audio.play();
     if (playPromise) await playPromise;
+    if (attempt !== adhanAttempt) return false;
     if (state.audioCtx && state.audioCtx.state === 'running') state.audioCtx.suspend().catch(() => {});
     el.alarmAudioStatus.textContent = '🔊 الأذان يعمل الآن';
     return true;
   } catch (err) {
+    if (attempt !== adhanAttempt) return false;
     console.warn('Adhan autoplay blocked or failed:', err);
     el.alarmAudioStatus.textContent = 'اضغط تشغيل الأذان — المتصفح منع التشغيل التلقائي';
     el.playAdhanBtn.hidden = false;
@@ -318,6 +407,8 @@ async function startAdhan() {
 }
 
 function showAlarm(prayerKey, manual = false) {
+  stopPreview();
+  document.dispatchEvent(new Event('salat:alarm'));
   const p = PRAYERS.find(x => x.key === prayerKey) || PRAYERS[0];
   el.alarmPrayer.textContent = `صلاة ${p.name}`;
   el.alarmScreen.classList.add('show');
@@ -331,7 +422,8 @@ function showAlarm(prayerKey, manual = false) {
 }
 
 function updateAlarmClock() {
-  el.alarmClock.textContent = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', hour12:false });
+  const now = new Date();
+  el.alarmClock.textContent = SalatUtils.formatTime(`${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`);
 }
 
 function stopAlarm() {
@@ -342,10 +434,7 @@ function stopAlarm() {
   if (state.audioCtx) state.audioCtx.suspend();
 }
 $('stopAlarmBtn').addEventListener('click', stopAlarm);
-el.playAdhanBtn.addEventListener('click', async () => {
-  await primeAdhanAudio();
-  await startAdhan();
-});
+el.playAdhanBtn.addEventListener('click', startAdhan);
 $('snoozeBtn').addEventListener('click', () => {
   const text = el.alarmPrayer.textContent.replace('صلاة ', '');
   const p = PRAYERS.find(x => x.name === text) || PRAYERS[0];
@@ -354,8 +443,7 @@ $('snoozeBtn').addEventListener('click', () => {
   state.snoozeTimer = setTimeout(() => showAlarm(p.key, true), 5 * 60 * 1000);
   toast('تم ضبط الغفوة لمدة 5 دقائق');
 });
-$('testAlarmBtn').addEventListener('click', async () => {
-  await primeAdhanAudio();
+$('testAlarmBtn').addEventListener('click', () => {
   showAlarm(state.nextPrayer?.key || 'Fajr', true);
 });
 
@@ -426,7 +514,7 @@ document.addEventListener('visibilitychange', () => {
 async function init() {
   renderToggles();
   renderPrayerList();
-  await registerServiceWorker();
+  await registerServiceWorker().catch(err => console.warn('Service worker unavailable:', err));
   if (state.coords) {
     el.locationLabel.textContent = 'الموقع المحفوظ';
     updateQiblaUI();

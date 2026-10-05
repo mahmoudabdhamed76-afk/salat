@@ -73,7 +73,7 @@ h2 { margin-bottom:0; font-size:21px; }
 .switch input:checked + .slider { background:var(--accent); }
 .switch input:checked + .slider:before { transform:translateX(-22px); }
 .fine-print { font-size:12px; color:#748a9e; line-height:1.7; margin:14px 2px 0; }
-.bottom-nav { position:fixed; z-index:20; bottom:max(12px, env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); width:min(calc(100% - 28px), 532px); padding:9px; display:grid; grid-template-columns:repeat(4,1fr); border:1px solid rgba(255,255,255,.08); border-radius:24px; background:rgba(7,17,29,.86); backdrop-filter:blur(22px); box-shadow:0 14px 50px rgba(0,0,0,.45); }
+.bottom-nav { position:fixed; z-index:20; bottom:max(12px, env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); width:min(calc(100% - 28px), 532px); padding:9px; display:grid; grid-template-columns:repeat(5,1fr); border:1px solid rgba(255,255,255,.08); border-radius:24px; background:rgba(7,17,29,.86); backdrop-filter:blur(22px); box-shadow:0 14px 50px rgba(0,0,0,.45); }
 .nav-btn { border:0; border-radius:16px; padding:8px 4px; color:#7f94a8; background:transparent; display:grid; gap:2px; place-items:center; cursor:pointer; }
 .nav-btn span { font-size:20px; }
 .nav-btn small { font-size:11px; }
@@ -114,6 +114,18 @@ h2 { margin-bottom:0; font-size:21px; }
 .hadith-source { color:#91c5ff; font-size:13px; text-decoration:underline; text-underline-offset:4px; padding:6px 0; }
 .hadith-note { color:var(--muted); font-size:12px; }
 .hadith-empty { margin-top:14px; line-height:1.8; text-align:center; }
+.settings-card + .settings-card { margin-top:14px; }
+.field-label { display:block; color:var(--muted); font-size:14px; margin:16px 0 8px; }
+.settings-select { width:100%; min-height:48px; border:1px solid var(--line); border-radius:14px; padding:12px; color:var(--text); background:var(--card-2); color-scheme:dark; font:inherit; }
+.volume-row { display:flex; justify-content:space-between; gap:10px; margin:20px 0 10px; font-size:14px; }
+.volume-slider { width:100%; min-height:28px; accent-color:var(--accent2); direction:ltr; }
+.next-time { font-size:clamp(38px, 11vw, 56px); letter-spacing:0; }
+.alarm-clock { font-size:clamp(46px, 13vw, 70px); letter-spacing:0; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline:2px solid #91c5ff; outline-offset:3px; }
+button:disabled { opacity:.45; cursor:default; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+}
 @media (max-width: 380px) {
   .action-grid { grid-template-columns:1fr; }
   .alarm-clock { font-size:64px; }

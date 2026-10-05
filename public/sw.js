@@ -1,5 +1,5 @@
-const CACHE = 'salat-reminder-v3-hadith-1';
-const ASSETS = ['/', '/styles.css', '/hadith.js', '/app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
+const CACHE = 'salat-reminder-v4-kids-2';
+const ASSETS = ['/', '/styles.css', '/kids.css', '/utils.js', '/hadith.js', '/kids.js', '/app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
@@ -16,7 +16,14 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  event.respondWith(fetch(event.request).catch(() => caches.match(event.request).then(r => r || caches.match('/'))));
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
+  event.respondWith(fetch(event.request).catch(async () => {
+    const cached = await caches.match(event.request);
+    if (cached) return cached;
+    if (event.request.mode === 'navigate') return caches.match('/');
+    return Response.error();
+  }));
 });
 
 self.addEventListener('push', (event) => {

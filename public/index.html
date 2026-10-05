@@ -11,6 +11,7 @@
   <link rel="manifest" href="/manifest.json" />
   <link rel="apple-touch-icon" href="/icons/icon-192.png" />
   <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/kids.css" />
 </head>
 <body>
   <main class="app-shell">
@@ -84,6 +85,49 @@
       </article>
     </section>
 
+    <section id="kidsView" class="view" aria-labelledby="kidsHeading">
+      <article class="kids-welcome">
+        <div class="kids-sky" aria-hidden="true"><span>✦</span><span>✧</span><span>✦</span></div>
+        <p class="eyebrow">خطوة صغيرة… وخير كبير</p>
+        <h2 id="kidsHeading">رحلتي الجميلة 🌙</h2>
+        <p>نتعلّم، نجرّب، ونكبر على الخير.</p>
+        <div class="kids-rewards"><span id="kidsStars">⭐ ٠ نجوم</span><span id="kidsProgress">٠ من ٤ دروس</span></div>
+      </article>
+      <div class="kids-topics" role="group" aria-label="اختر درسًا">
+        <button class="kids-topic selected" data-lesson="wudu" aria-pressed="true"><span>💧</span><b>وضوئي</b><small>ماء ونظافة</small></button>
+        <button class="kids-topic" data-lesson="prayer" aria-pressed="false"><span>🕌</span><b>صلاتي</b><small>خطوة بخطوة</small></button>
+        <button class="kids-topic" data-lesson="pillars" aria-pressed="false"><span>🌙</span><b>ديني</b><small>خمسة أركان</small></button>
+        <button class="kids-topic" data-lesson="kindness" aria-pressed="false"><span>💚</span><b>أخلاقي</b><small>خير كل يوم</small></button>
+      </div>
+      <article class="kids-lesson" aria-labelledby="kidsLessonTitle">
+        <div class="kids-lesson-top"><h3 id="kidsLessonTitle"></h3><span id="kidsStepCount"></span></div>
+        <div id="kidsStepDots" class="kids-step-dots" aria-hidden="true"></div>
+        <div id="kidsScene" class="kids-scene"></div>
+        <div class="kids-step-copy" aria-live="polite" aria-atomic="true">
+          <h3 id="kidsStepTitle"></h3><p id="kidsStepText"></p><p id="kidsStepWords" class="kids-words"></p>
+        </div>
+        <div class="kids-playback">
+          <button id="kidsAutoBtn" class="kids-auto" aria-pressed="false">▶ عرض متتابع</button>
+          <label class="kids-motion"><input id="kidsMotionToggle" type="checkbox" checked /> حركة الرسومات</label>
+        </div>
+        <div class="kids-step-actions">
+          <button id="kidsPrevBtn" class="kids-back">السابق</button>
+          <button id="kidsNextBtn" class="kids-next">التالي ←</button>
+        </div>
+        <p id="kidsCelebration" class="kids-celebration" role="status" hidden></p>
+        <p id="kidsLessonNote" class="kids-parent-note"></p>
+        <a id="kidsSource" class="kids-source" target="_blank" rel="noopener noreferrer">مصدر الدرس للوالدين ↗</a>
+      </article>
+      <section class="kids-quiz" aria-labelledby="kidsQuizHeading">
+        <div class="kids-lesson-top"><h3 id="kidsQuizHeading">نلعب ونتعلّم ✨</h3><span id="kidsQuizCount"></span></div>
+        <p id="kidsQuizQuestion" class="kids-question"></p>
+        <div id="kidsQuizAnswers" class="kids-answers"></div>
+        <p id="kidsQuizFeedback" class="kids-feedback" role="status"></p>
+        <button id="kidsNextQuestionBtn" class="kids-auto">سؤال آخر ←</button>
+      </section>
+      <p class="kids-footer-note">تعلّم مع ماما أو بابا، وجرّب الخطوات معهما بهدوء. النجوم للتشجيع على التعلّم.</p>
+    </section>
+
     <section id="hadithView" class="view" aria-labelledby="hadithHeading">
       <section class="section-card hadith-intro">
         <p class="eyebrow">من هدي النبي ﷺ</p>
@@ -110,6 +154,16 @@
 
     <section id="settingsView" class="view">
       <article class="section-card settings-card">
+        <div class="section-title-row"><h2>صوت الأذان</h2><span aria-hidden="true">🔊</span></div>
+        <label for="adhanVoiceSelect" class="field-label">اختر المؤذن</label>
+        <select id="adhanVoiceSelect" class="settings-select"></select>
+        <div class="volume-row"><label for="adhanVolume">مستوى الصوت</label><output id="adhanVolumeValue" for="adhanVolume"></output></div>
+        <input id="adhanVolume" class="volume-slider" type="range" min="10" max="100" step="5" value="100" />
+        <button id="previewAdhanBtn" class="pill-btn wide" aria-pressed="false">▶ استمع للصوت</button>
+        <p id="previewAdhanStatus" class="fine-print" role="status">اختيارك محفوظ على هذا الجهاز. سماع التسجيل يحتاج إلى الإنترنت.</p>
+        <a class="hadith-source" href="https://aladhan.com/download-adhans" target="_blank" rel="noopener noreferrer">مصادر تسجيلات الأذان ↗</a>
+      </article>
+      <article class="section-card settings-card">
         <div class="section-title-row"><h2>إعدادات الصلاة</h2></div>
         <p class="muted">اختر الصلوات التي تريد إشعارًا عند دخول وقتها.</p>
         <div id="prayerToggles" class="toggle-list"></div>
@@ -122,6 +176,7 @@
     <nav class="bottom-nav" aria-label="التنقل">
       <button class="nav-btn active" data-view="homeView"><span>🕌</span><small>الصلاة</small></button>
       <button class="nav-btn" data-view="qiblaView"><span>🧭</span><small>القبلة</small></button>
+      <button class="nav-btn" data-view="kidsView"><span>🌈</span><small>للطفل</small></button>
       <button class="nav-btn" data-view="hadithView"><span>📖</span><small>الأحاديث</small></button>
       <button class="nav-btn" data-view="settingsView"><span>⚙️</span><small>الإعدادات</small></button>
     </nav>
@@ -143,13 +198,13 @@
     </div>
   </div>
 
-  <audio id="adhanAudio" preload="metadata" playsinline>
-    <source src="https://upload.wikimedia.org/wikipedia/commons/transcoded/a/a9/Muslim_calling_to_prayer.ogg/Muslim_calling_to_prayer.ogg.mp3" type="audio/mpeg" />
-    <source src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Muslim_calling_to_prayer.ogg" type="audio/ogg" />
-  </audio>
+  <audio id="adhanAudio" preload="none" playsinline></audio>
+  <audio id="previewAudio" preload="none" playsinline></audio>
 
   <div id="toast" class="toast"></div>
+  <script src="/utils.js" defer></script>
   <script src="/hadith.js" defer></script>
+  <script src="/kids.js" defer></script>
   <script src="/app.js" defer></script>
 </body>
 </html>

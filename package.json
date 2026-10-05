@@ -2,11 +2,12 @@
   "name": "salat-reminder",
   "version": "1.0.0",
   "private": true,
-  "description": "Arabic prayer-only PWA with full-screen prayer alarm, Web Push, and Qibla compass.",
+  "description": "Arabic prayer PWA with adhan voices, hadiths, Qibla, and animated children's lessons.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "test": "node --test",
     "generate-vapid": "web-push generate-vapid-keys"
   },
   "engines": {
