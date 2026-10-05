@@ -1,10 +1,16 @@
 const SalatUtils = (() => {
   const voices = [
     { id: 'alafasy', name: 'مشاري راشد العفاسي', url: 'https://cdn.aladhan.com/audio/adhans/a9.mp3' },
+    // Internet Archive item; the server resolves the item's MP3 file by format.
+    { id: 'refaat', name: 'الشيخ محمد رفعت', archive: { item: '20240312_20240312_1857', format: 'VBR MP3' } },
     { id: 'nafees', name: 'أحمد النفيس', url: 'https://cdn.aladhan.com/audio/adhans/a1.mp3' },
     { id: 'zahrani', name: 'منصور الزهراني', url: 'https://cdn.aladhan.com/audio/adhans/a11-mansour-al-zahrani.mp3' },
     { id: 'classic', name: 'الأذان الأصلي', url: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/a/a9/Muslim_calling_to_prayer.ogg/Muslim_calling_to_prayer.ogg.mp3' }
   ];
+  // Same-origin path: the server downloads once, and the service worker keeps it for offline use.
+  function audioPath(id) {
+    return `/audio/${encodeURIComponent(id)}.mp3`;
+  }
   function formatTime(time) {
     const match = /^(\d{1,2}):(\d{2})$/.exec(String(time));
     if (!match) return '--:--';
@@ -20,6 +26,6 @@ const SalatUtils = (() => {
   function saveSetting(key, value) {
     try { localStorage.setItem(key, value); return true; } catch { return false; }
   }
-  return { voices, formatTime, readSetting, saveSetting };
+  return { voices, audioPath, formatTime, readSetting, saveSetting };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = SalatUtils;

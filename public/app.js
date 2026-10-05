@@ -38,13 +38,44 @@ function toast(msg) {
   window.__toastTimer = setTimeout(() => el.toast.classList.remove('show'), 2600);
 }
 
+const VIEW_ORDER = ['homeView', 'qiblaView', 'kidsView', 'hadithView', 'settingsView'];
+let currentView = 'homeView';
+
+// Slide the new screen in from the side it sits on in the bottom bar (RTL: forward = from the left).
+function playViewEnter(view, dir) {
+  if (!view) return;
+  view.classList.remove('view-in-fwd', 'view-in-back', 'entering');
+  void view.offsetWidth;
+  view.classList.add(`view-in-${dir}`, 'entering');
+  clearTimeout(view.__enterTimer);
+  view.__enterTimer = setTimeout(() => view.classList.remove('entering'), 900);
+}
+
+function moveNavIndicator() {
+  const nav = document.querySelector?.('.bottom-nav');
+  const indicator = nav?.querySelector('.nav-indicator');
+  const btn = nav?.querySelector('.nav-btn.active');
+  if (!indicator || !btn) return;
+  indicator.style.width = `${btn.offsetWidth}px`;
+  indicator.style.transform = `translateX(${btn.offsetLeft}px)`;
+  nav.classList.add('has-indicator');
+}
+
 function switchView(viewId) {
+  const same = viewId === currentView;
+  const dir = VIEW_ORDER.indexOf(viewId) >= VIEW_ORDER.indexOf(currentView) ? 'fwd' : 'back';
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === viewId));
+  if (!same) {
+    playViewEnter($(viewId), dir);
+    try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch { window.scrollTo?.(0, 0); }
+  }
+  currentView = viewId;
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.view === viewId);
     if (b.dataset.view === viewId) b.setAttribute('aria-current', 'page');
     else b.removeAttribute('aria-current');
   });
+  moveNavIndicator();
   if (viewId !== 'settingsView') stopPreview();
   document.dispatchEvent(new CustomEvent('salat:viewchange', { detail: viewId }));
 }
@@ -124,23 +155,78 @@ function updateNextPrayer() {
   renderPrayerList();
 }
 
+function localDateKey(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function coordsKey(c) {
+  return c ? `${Number(c.lat).toFixed(2)},${Number(c.lng).toFixed(2)}` : '';
+}
+
+// Offline calendar: two months of timings stored on the device for the saved location.
+function readCalendar() {
+  try {
+    const cal = JSON.parse(SalatUtils.readSetting('salat.calendar', 'null'));
+    return cal && cal.coords === coordsKey(state.coords) ? cal : null;
+  } catch { return null; }
+}
+
+function calendarDaysAhead(cal) {
+  if (!cal?.days) return 0;
+  const today = localDateKey();
+  return Object.keys(cal.days).filter(k => k >= today).length;
+}
+
+async function refreshCalendar(tz) {
+  const res = await fetch(`/api/calendar?lat=${encodeURIComponent(state.coords.lat)}&lng=${encodeURIComponent(state.coords.lng)}&tz=${encodeURIComponent(tz)}`);
+  if (!res.ok) throw new Error('calendar failed');
+  const data = await res.json();
+  const today = localDateKey();
+  const prev = readCalendar()?.days || {};
+  const days = Object.fromEntries(Object.entries({ ...prev, ...data.days }).filter(([k]) => k >= today));
+  SalatUtils.saveSetting('salat.calendar', JSON.stringify({ coords: coordsKey(state.coords), savedAt: Date.now(), days }));
+  return days;
+}
+
+function applyTimings(timings, source) {
+  state.timings = timings;
+  state.timingsDate = localDateKey();
+  state.timingsSource = source;
+  SalatUtils.saveSetting('salat.lastTimings', JSON.stringify(timings));
+  document.dispatchEvent(new CustomEvent('salat:timings', { detail: timings }));
+  updateNextPrayer();
+}
+
 async function loadTimes() {
   if (!state.coords) {
     renderPrayerList();
     return;
   }
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo';
+  const cal = readCalendar();
+  const cachedToday = cal?.days?.[localDateKey()];
+  // Show the stored day instantly (works with no internet), then refresh online.
+  if (cachedToday) applyTimings(cachedToday, 'offline');
+
+  if (navigator.onLine === false) {
+    if (!cachedToday) toast('لا يوجد إنترنت ولا مواقيت محفوظة لهذا اليوم');
+    return;
+  }
   try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Cairo';
     const res = await fetch(`/api/timings?lat=${encodeURIComponent(state.coords.lat)}&lng=${encodeURIComponent(state.coords.lng)}&tz=${encodeURIComponent(tz)}`);
     if (!res.ok) throw new Error('timings failed');
     const data = await res.json();
-    state.timings = data.timings;
-    SalatUtils.saveSetting('salat.lastTimings', JSON.stringify(data.timings));
-    document.dispatchEvent(new CustomEvent('salat:timings', { detail: data.timings }));
-    updateNextPrayer();
+    applyTimings(data.timings, 'online');
   } catch (err) {
-    toast('تعذر تحميل مواقيت الصلاة الآن');
+    if (!cachedToday) toast('تعذر تحميل مواقيت الصلاة الآن');
   }
+  if (calendarDaysAhead(cal) < 20) {
+    refreshCalendar(tz).then(updateSetupState).catch(() => {});
+  }
+}
+
+function ensureTodayTimings() {
+  if (state.coords && state.timingsDate && state.timingsDate !== localDateKey()) loadTimes();
 }
 
 function calcQiblaBearing(lat, lng) {
@@ -166,12 +252,15 @@ async function requestLocation() {
   if (!navigator.geolocation) return toast('المتصفح لا يدعم تحديد الموقع');
   toast('جاري تحديد موقعك…');
   navigator.geolocation.getCurrentPosition(async (pos) => {
+    const moved = coordsKey(state.coords) !== coordsKey({ lat: pos.coords.latitude, lng: pos.coords.longitude });
     state.coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
     localStorage.setItem('salat.coords', JSON.stringify(state.coords));
+    if (moved) SalatUtils.saveSetting('salat.calendar', 'null');
     el.locationLabel.textContent = 'موقعك الحالي';
     updateQiblaUI();
     await loadTimes();
     await syncPushSubscription(false);
+    updateSetupState();
     toast('تم تحديث مواقيت الصلاة والقبلة');
   }, (err) => {
     console.warn(err);
@@ -233,6 +322,37 @@ async function syncPushSubscription(interactive = true) {
     })
   });
   if (interactive) toast(res.ok ? 'تم تفعيل تنبيهات الصلاة ✅' : 'تعذر حفظ إعداد التنبيهات');
+  updateSetupState();
+}
+
+// Setup status (settings card) + home banner shown only while something is missing.
+async function pushIsActive() {
+  try {
+    if (!('serviceWorker' in navigator) || typeof Notification === 'undefined' || Notification.permission !== 'granted') return false;
+    const reg = await navigator.serviceWorker.getRegistration();
+    return Boolean(await reg?.pushManager?.getSubscription());
+  } catch { return false; }
+}
+
+async function updateSetupState() {
+  const hasLocation = Boolean(state.coords);
+  const hasPush = await pushIsActive();
+  const days = calendarDaysAhead(readCalendar());
+  const set = (id, text, ok) => {
+    const node = $(id);
+    if (!node) return;
+    node.textContent = text;
+    node.classList.toggle('ok', ok);
+  };
+  set('locationStatus', hasLocation ? '✓ الموقع محدد' : 'الموقع غير محدد', hasLocation);
+  set('notifStatus', hasPush ? '✓ التنبيهات مفعّلة' : 'التنبيهات غير مفعّلة', hasPush);
+  set('offlineStatus', days ? `✓ ${days.toLocaleString('ar-EG')} يومًا محفوظة للعمل بدون إنترنت` : 'المواقيت غير محفوظة بعد للعمل بدون إنترنت', days > 0);
+  const banner = $('setupBanner');
+  if (banner) {
+    banner.hidden = hasLocation && hasPush;
+    const text = $('setupBannerText');
+    if (text) text.textContent = !hasLocation && !hasPush ? 'خطوتين وتبدأ: حدّد موقعك وفعّل التنبيهات' : !hasLocation ? 'حدّد موقعك لعرض المواقيت والقبلة' : 'فعّل التنبيهات علشان المنبّه يوصلك والشاشة مقفولة';
+  }
 }
 $('enableNotificationsBtn').addEventListener('click', async () => {
   await primeAdhanAudio();
@@ -249,6 +369,7 @@ $('disableNotificationsBtn').addEventListener('click', async () => {
     }
     toast('تم إيقاف التنبيهات');
   } catch { toast('تعذر إيقاف التنبيهات'); }
+  updateSetupState();
 });
 
 function setupAudio() {
@@ -322,12 +443,33 @@ function selectedVoice() {
   return SalatUtils.voices.find(voice => voice.id === state.voice) || SalatUtils.voices[0];
 }
 
+// Keep the chosen adhan on the device so the alarm sounds without internet.
+const AUDIO_CACHE = 'salat-audio-v1';
+async function cacheVoice(voice) {
+  if (typeof caches === 'undefined') return false;
+  try {
+    const cache = await caches.open(AUDIO_CACHE);
+    const url = SalatUtils.audioPath(voice.id);
+    if (await cache.match(url)) return true;
+    if (navigator.onLine === false) return false;
+    const res = await fetch(url);
+    if (!res.ok) return false;
+    await cache.put(url, res);
+    return true;
+  } catch { return false; }
+}
+
 function configureAdhan() {
   stopPreview();
   stopAdhan();
   const voice = selectedVoice();
-  el.adhanAudio.src = voice.url;
-  previewAudio.src = voice.url;
+  const src = SalatUtils.audioPath(voice.id);
+  el.adhanAudio.src = src;
+  previewAudio.src = src;
+  cacheVoice(voice).then(saved => {
+    const note = $('voiceOfflineStatus');
+    if (note) note.textContent = saved ? '✓ الصوت محفوظ على الجهاز ويعمل بدون إنترنت' : 'سيُحفظ الصوت على الجهاز عند أول اتصال بالإنترنت';
+  });
   el.adhanAudio.volume = previewAudio.volume = state.volume;
   $('adhanVoiceSelect').value = voice.id;
   $('adhanVolume').value = Math.round(state.volume * 100);
@@ -528,6 +670,7 @@ if (el.adhanAudio) {
     if (el.alarmScreen.classList.contains('show')) {
       el.alarmAudioStatus.textContent = 'تعذر تحميل ملف الأذان — اضغط للمحاولة مرة أخرى';
       el.playAdhanBtn.hidden = false;
+      playAlarmTone();
     }
   });
 }
@@ -547,6 +690,9 @@ document.addEventListener('visibilitychange', () => {
 });
 
 async function init() {
+  playViewEnter($('homeView'), 'fwd');
+  moveNavIndicator();
+  window.addEventListener('resize', moveNavIndicator);
   renderToggles();
   renderPrayerList();
   await registerServiceWorker().catch(err => console.warn('Service worker unavailable:', err));
@@ -564,9 +710,20 @@ async function init() {
   }
 
   setInterval(() => {
+    ensureTodayTimings();
     updateNextPrayer();
     checkForegroundAlarm();
   }, 10000);
+  updateSetupState();
 }
+
+$('setupBanner')?.addEventListener('click', () => switchView('settingsView'));
+function updateOnlineBadge() {
+  const badge = $('offlineBadge');
+  if (badge) badge.hidden = navigator.onLine !== false;
+}
+window.addEventListener('online', () => { updateOnlineBadge(); loadTimes(); cacheVoice(selectedVoice()); });
+window.addEventListener('offline', updateOnlineBadge);
+updateOnlineBadge();
 
 init();

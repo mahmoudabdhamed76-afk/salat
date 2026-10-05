@@ -89,3 +89,14 @@ test('reminder minutes are validated and phrased in correct Arabic', () => {
   assert.equal(minutesText(15), '١٥ دقيقة');
   assert.equal(SalatCompanion.minutesText(5), '٥ دقائق');
 });
+
+test('Sheikh Mohamed Refaat voice is available and every voice plays from the same-origin cache path', () => {
+  const SalatUtils = require('../public/utils.js');
+  const refaat = SalatUtils.voices.find(v => v.id === 'refaat');
+  assert.equal(refaat.name, 'الشيخ محمد رفعت');
+  assert.equal(refaat.archive.item, '20240312_20240312_1857');
+  for (const v of SalatUtils.voices) {
+    assert.ok(v.url || v.archive, v.id);
+    assert.equal(SalatUtils.audioPath(v.id), `/audio/${v.id}.mp3`);
+  }
+});

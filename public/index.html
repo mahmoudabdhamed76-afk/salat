@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="/kids.css" />
   <link rel="stylesheet" href="/theme.css" />
   <link rel="stylesheet" href="/companion.css" />
+  <link rel="stylesheet" href="/motion.css" />
   <script src="/theme.js"></script>
 </head>
 <body>
@@ -24,6 +25,7 @@
         <h1>صلاتي</h1>
       </div>
       <div class="topbar-actions">
+        <span id="offlineBadge" class="offline-badge" role="status" hidden>⚡ بدون إنترنت</span>
         <button id="themeBtn" class="icon-btn" aria-label="المظهر">🌗</button>
         <button id="settingsBtn" class="icon-btn" aria-label="الإعدادات">⚙️</button>
       </div>
@@ -42,16 +44,11 @@
         <div id="countdown" class="countdown">حدّد موقعك لعرض المواقيت</div>
       </article>
 
-      <div class="action-grid">
-        <button id="enableNotificationsBtn" class="primary-action">
-          <span class="action-icon">🔔</span>
-          <span><b>فعّل تنبيهات الصلاة</b><small>إشعار عند دخول وقت الصلاة</small></span>
-        </button>
-        <button id="locateBtn" class="secondary-action">
-          <span class="action-icon">📍</span>
-          <span><b>تحديد الموقع</b><small>لحساب المواقيت والقبلة</small></span>
-        </button>
-      </div>
+      <button id="setupBanner" class="setup-banner" hidden>
+        <span class="setup-banner-icon" aria-hidden="true">✨</span>
+        <span><b id="setupBannerText">خطوتين وتبدأ: حدّد موقعك وفعّل التنبيهات</b><small>من الإعدادات</small></span>
+        <span class="setup-banner-go" aria-hidden="true">←</span>
+      </button>
 
       <section class="section-card">
         <div class="section-title-row">
@@ -170,6 +167,24 @@
     </section>
 
     <section id="settingsView" class="view">
+      <article class="section-card settings-card setup-card">
+        <div class="section-title-row"><h2>الموقع والتنبيهات</h2><span aria-hidden="true">📍</span></div>
+        <div class="action-grid">
+          <button id="enableNotificationsBtn" class="primary-action">
+            <span class="action-icon">🔔</span>
+            <span><b>فعّل تنبيهات الصلاة</b><small>إشعار عند دخول وقت الصلاة</small></span>
+          </button>
+          <button id="locateBtn" class="secondary-action">
+            <span class="action-icon">📍</span>
+            <span><b>تحديد الموقع</b><small>لحساب المواقيت والقبلة</small></span>
+          </button>
+        </div>
+        <ul class="setup-status" aria-live="polite">
+          <li id="locationStatus">الموقع غير محدد</li>
+          <li id="notifStatus">التنبيهات غير مفعّلة</li>
+          <li id="offlineStatus">المواقيت غير محفوظة بعد للعمل بدون إنترنت</li>
+        </ul>
+      </article>
       <article class="section-card settings-card">
         <div class="section-title-row"><h2>المظهر</h2><span aria-hidden="true">🎨</span></div>
         <div class="theme-options" role="group" aria-label="اختر المظهر">
@@ -185,7 +200,8 @@
         <div class="volume-row"><label for="adhanVolume">مستوى الصوت</label><output id="adhanVolumeValue" for="adhanVolume"></output></div>
         <input id="adhanVolume" class="volume-slider" type="range" min="10" max="100" step="5" value="100" />
         <button id="previewAdhanBtn" class="pill-btn wide" aria-pressed="false">▶ استمع للصوت</button>
-        <p id="previewAdhanStatus" class="fine-print" role="status">اختيارك محفوظ على هذا الجهاز. سماع التسجيل يحتاج إلى الإنترنت.</p>
+        <p id="previewAdhanStatus" class="fine-print" role="status">اختيارك محفوظ على هذا الجهاز.</p>
+        <p id="voiceOfflineStatus" class="fine-print voice-offline"></p>
         <a class="hadith-source" href="https://aladhan.com/download-adhans" target="_blank" rel="noopener noreferrer">مصادر تسجيلات الأذان ↗</a>
       </article>
       <article class="section-card settings-card">
@@ -202,6 +218,7 @@
     </section>
 
     <nav class="bottom-nav" aria-label="التنقل">
+      <span class="nav-indicator" aria-hidden="true"></span>
       <button class="nav-btn active" data-view="homeView"><span>🕌</span><small>الصلاة</small></button>
       <button class="nav-btn" data-view="qiblaView"><span>🧭</span><small>القبلة</small></button>
       <button class="nav-btn" data-view="kidsView"><span>🌈</span><small>للطفل</small></button>

@@ -115,6 +115,116 @@ app.get('/api/timings', async (req, res) => {
   }
 });
 
+// ---------- Offline support: a month of timings per request ----------
+const calendarCache = new Map();
+
+async function getMonthCalendar(lat, lng, year, month) {
+  const cacheKey = `${lat.toFixed(3)},${lng.toFixed(3)}:${year}-${month}`;
+  const cached = calendarCache.get(cacheKey);
+  if (cached && Date.now() - cached.ts < 24 * 60 * 60 * 1000) return cached.data;
+
+  const url = new URL(`https://api.aladhan.com/v1/calendar/${year}/${month}`);
+  url.searchParams.set('latitude', String(lat));
+  url.searchParams.set('longitude', String(lng));
+  url.searchParams.set('method', '5');
+  url.searchParams.set('school', '0');
+  const response = await fetch(url, { headers: { 'User-Agent': 'SalatReminder/1.0' } });
+  if (!response.ok) throw new Error(`Calendar API returned ${response.status}`);
+  const json = await response.json();
+  if (!Array.isArray(json?.data)) throw new Error('Calendar API returned no days');
+
+  const days = {};
+  for (const day of json.data) {
+    const [dd, mm, yyyy] = String(day?.date?.gregorian?.date || '').split('-');
+    const t = day?.timings;
+    if (!dd || !t) continue;
+    days[`${yyyy}-${mm}-${dd}`] = {
+      Fajr: String(t.Fajr).slice(0, 5),
+      Dhuhr: String(t.Dhuhr).slice(0, 5),
+      Asr: String(t.Asr).slice(0, 5),
+      Maghrib: String(t.Maghrib).slice(0, 5),
+      Isha: String(t.Isha).slice(0, 5)
+    };
+  }
+  if (calendarCache.size > 500) calendarCache.clear();
+  calendarCache.set(cacheKey, { ts: Date.now(), data: days });
+  return days;
+}
+
+// Returns this month and next month so the phone can keep working without internet.
+app.get('/api/calendar', async (req, res) => {
+  try {
+    const lat = Number(req.query.lat);
+    const lng = Number(req.query.lng);
+    const timeZone = String(req.query.tz || 'Africa/Cairo');
+    if (!isValidLatLng(lat, lng)) return res.status(400).json({ error: 'Invalid coordinates' });
+    const { dateKey } = localDateParts(timeZone);
+    const [year, month] = dateKey.split('-').map(Number);
+    const next = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
+    const [current, following] = await Promise.all([
+      getMonthCalendar(lat, lng, year, month),
+      getMonthCalendar(lat, lng, next.year, next.month).catch(() => ({}))
+    ]);
+    res.json({ today: dateKey, days: { ...current, ...following } });
+  } catch (err) {
+    console.error('[calendar]', err.message);
+    res.status(502).json({ error: 'Could not load prayer calendar' });
+  }
+});
+
+// ---------- Adhan audio: downloaded once to the volume, served same-origin ----------
+const AUDIO_DIR = process.env.AUDIO_DIR || path.join(path.dirname(DATA_PATH), 'audio');
+const audioDownloads = new Map();
+
+async function resolveVoiceUrl(voice) {
+  if (voice.url) return voice.url;
+  if (!voice.archive) throw new Error('Voice has no source');
+  const { item, format } = voice.archive;
+  const meta = await fetch(`https://archive.org/metadata/${encodeURIComponent(item)}/files`, { headers: { 'User-Agent': 'SalatReminder/1.0' } });
+  if (!meta.ok) throw new Error(`Archive metadata returned ${meta.status}`);
+  const json = await meta.json();
+  const files = Array.isArray(json?.result) ? json.result : [];
+  const file = files.find(f => f.format === format) || files.find(f => /\.mp3$/i.test(f.name || ''));
+  if (!file) throw new Error('No MP3 in archive item');
+  return `https://archive.org/download/${encodeURIComponent(item)}/${encodeURIComponent(file.name)}`;
+}
+
+async function ensureAudioFile(voice) {
+  const file = path.join(AUDIO_DIR, `${voice.id}.mp3`);
+  if (fs.existsSync(file) && fs.statSync(file).size > 10 * 1024) return file;
+  if (audioDownloads.has(voice.id)) return audioDownloads.get(voice.id);
+
+  const job = (async () => {
+    const source = await resolveVoiceUrl(voice);
+    const response = await fetch(source, { headers: { 'User-Agent': 'SalatReminder/1.0' }, redirect: 'follow' });
+    if (!response.ok) throw new Error(`Audio source returned ${response.status}`);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (buffer.length < 10 * 1024) throw new Error('Audio file too small');
+    fs.mkdirSync(AUDIO_DIR, { recursive: true });
+    const tmp = `${file}.tmp`;
+    fs.writeFileSync(tmp, buffer);
+    fs.renameSync(tmp, file);
+    console.log(`[audio] cached ${voice.id} (${Math.round(buffer.length / 1024)} KB)`);
+    return file;
+  })();
+  audioDownloads.set(voice.id, job);
+  try { return await job; } finally { audioDownloads.delete(voice.id); }
+}
+
+app.get('/audio/:id.mp3', async (req, res) => {
+  const voice = SalatUtils.voices.find(v => v.id === req.params.id);
+  if (!voice) return res.status(404).json({ error: 'Unknown voice' });
+  try {
+    const file = await ensureAudioFile(voice);
+    res.set('Cache-Control', 'public, max-age=2592000');
+    res.type('audio/mpeg');
+    res.sendFile(file);
+  } catch (err) {
+    console.error('[audio]', voice.id, err.message);
+    res.status(502).json({ error: 'Could not load adhan audio' });
+  }
+});
+
 app.post('/api/subscriptions', (req, res) => {
   try {
     const { subscription, lat, lng, timeZone, enabledPrayers, reminderMinutes } = req.body || {};

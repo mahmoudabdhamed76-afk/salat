@@ -55,7 +55,7 @@ test('Asr still triggers at 15:40 while all displayed times use 12-hour Arabic',
 
 test('saved reciter and volume apply to both playback elements and survive audio priming', async () => {
   const app = appHarness({ 'salat.voice': 'nafees', 'salat.volume': '0.35' });
-  assert.match(app.element('adhanAudio').src, /a1\.mp3$/);
+  assert.equal(app.element('adhanAudio').src, '/audio/nafees.mp3');
   assert.equal(app.element('previewAudio').src, app.element('adhanAudio').src);
   assert.equal(app.element('previewAudio').volume, 0.35);
   await app.run('primeAdhanAudio()');

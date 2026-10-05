@@ -211,8 +211,16 @@ const SalatCompanion = (() => {
     document.querySelectorAll('.theme-option').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
   }
   function setTheme(mode) {
-    SalatTheme.setMode(mode);
-    renderThemeControls();
+    const swap = () => { SalatTheme.setMode(mode); renderThemeControls(); };
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    // Cross-fade the whole screen where supported; otherwise a short fade on the shell.
+    if (document.startViewTransition && !reduce) { document.startViewTransition(swap); return; }
+    swap();
+    if (!reduce) {
+      document.documentElement.classList.remove('theme-fade');
+      void document.documentElement.offsetWidth;
+      document.documentElement.classList.add('theme-fade');
+    }
   }
   $('themeBtn').addEventListener('click', () => {
     const order = SalatTheme.MODES;

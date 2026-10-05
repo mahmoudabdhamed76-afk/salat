@@ -1,0 +1,109 @@
+/* Motion & micro-interactions. All of it switches off with the phone's "reduce motion"
+   setting (see the prefers-reduced-motion rule in styles.css). */
+:root {
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+}
+
+/* ---------- Screen transitions (direction follows the bottom bar) ---------- */
+.view { animation: none; }
+.view.view-in-fwd { animation: viewInFwd .44s var(--ease-out) both; }
+.view.view-in-back { animation: viewInBack .44s var(--ease-out) both; }
+@keyframes viewInFwd { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: none; } }
+@keyframes viewInBack { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
+
+/* Cards rise in one after another when a screen opens */
+.view.entering > * { animation: riseIn .52s var(--ease-out) both; }
+.view.entering > *:nth-child(2) { animation-delay: .05s; }
+.view.entering > *:nth-child(3) { animation-delay: .1s; }
+.view.entering > *:nth-child(4) { animation-delay: .15s; }
+.view.entering > *:nth-child(5) { animation-delay: .2s; }
+.view.entering > *:nth-child(n+6) { animation-delay: .25s; }
+@keyframes riseIn { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+
+/* Prayer rows slide in */
+.view.entering .prayer-row { animation: rowIn .46s var(--ease-out) both; }
+.view.entering .prayer-row:nth-child(1) { animation-delay: .12s; }
+.view.entering .prayer-row:nth-child(2) { animation-delay: .17s; }
+.view.entering .prayer-row:nth-child(3) { animation-delay: .22s; }
+.view.entering .prayer-row:nth-child(4) { animation-delay: .27s; }
+.view.entering .prayer-row:nth-child(5) { animation-delay: .32s; }
+@keyframes rowIn { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+
+/* Tracker dots fill day by day */
+.view.entering .tracker-dots span { animation: dotIn .38s var(--ease-spring) both; }
+.view.entering .tracker-day:nth-child(1) span { animation-delay: .2s; }
+.view.entering .tracker-day:nth-child(2) span { animation-delay: .25s; }
+.view.entering .tracker-day:nth-child(3) span { animation-delay: .3s; }
+.view.entering .tracker-day:nth-child(4) span { animation-delay: .35s; }
+.view.entering .tracker-day:nth-child(5) span { animation-delay: .4s; }
+.view.entering .tracker-day:nth-child(6) span { animation-delay: .45s; }
+.view.entering .tracker-day:nth-child(7) span { animation-delay: .5s; }
+@keyframes dotIn { from { opacity: 0; transform: scale(.3); } to { opacity: 1; transform: none; } }
+
+/* Qibla compass swings into place */
+.view.entering .compass { animation: compassIn .8s var(--ease-spring) both .08s; }
+@keyframes compassIn { from { opacity: 0; transform: rotate(-35deg) scale(.88); } to { opacity: 1; transform: none; } }
+
+/* Kids topics and hadith cards pop in */
+.view.entering .kids-topic { animation: popIn .45s var(--ease-spring) both; }
+.view.entering .kids-topic:nth-child(2) { animation-delay: .06s; }
+.view.entering .kids-topic:nth-child(3) { animation-delay: .12s; }
+.view.entering .kids-topic:nth-child(4) { animation-delay: .18s; }
+.view.entering .hadith-list > * { animation: riseIn .5s var(--ease-out) both; }
+.view.entering .hadith-list > *:nth-child(2) { animation-delay: .06s; }
+.view.entering .hadith-list > *:nth-child(3) { animation-delay: .12s; }
+.view.entering .hadith-list > *:nth-child(n+4) { animation-delay: .18s; }
+.view.entering .theme-option { animation: popIn .42s var(--ease-spring) both; }
+.view.entering .theme-option:nth-child(2) { animation-delay: .05s; }
+.view.entering .theme-option:nth-child(3) { animation-delay: .1s; }
+@keyframes popIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+
+/* ---------- Living details ---------- */
+.hero-glow { animation: glowDrift 9s ease-in-out infinite alternate; }
+@keyframes glowDrift { to { transform: translate(60px, 40px) scale(1.15); } }
+.countdown::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-inline-end: 8px; align-self: center; animation: beat 2s ease-in-out infinite; }
+@keyframes beat { 50% { transform: scale(1.5); opacity: .45; } }
+
+/* ---------- Bottom bar: sliding pill + icon bounce ---------- */
+.bottom-nav { isolation: isolate; }
+.nav-indicator { position: absolute; top: 9px; bottom: 9px; left: 0; width: 0; border-radius: 16px; background: rgba(255,255,255,.09); z-index: -1; transition: transform .5s var(--ease-spring), width .3s var(--ease-out); pointer-events: none; }
+html[data-theme="day"] .nav-indicator { background: #efe6fb; }
+.bottom-nav.has-indicator .nav-btn.active { background: transparent; }
+.nav-btn { transition: color .25s; }
+.nav-btn.active span { animation: navPop .5s var(--ease-spring); }
+@keyframes navPop { 0% { transform: scale(.7) translateY(4px); } 60% { transform: scale(1.18) translateY(-3px); } 100% { transform: none; } }
+
+/* ---------- Press feedback ---------- */
+:is(.primary-action, .secondary-action, .pill-btn, .soft-btn, .danger-btn, .theme-option, .icon-btn, .setup-banner, .snooze-btn, .stop-btn, .play-adhan-btn, .kids-topic, .kids-next, .kids-back, .kids-answer, .dhikr-card) {
+  transition: transform .2s var(--ease-out), box-shadow .2s, background-color .25s, border-color .25s;
+}
+:is(.primary-action, .secondary-action, .pill-btn, .soft-btn, .danger-btn, .theme-option, .icon-btn, .setup-banner, .snooze-btn, .stop-btn, .play-adhan-btn, .kids-topic, .kids-next, .kids-back, .kids-answer):active { transform: scale(.95); }
+.dhikr-card:has(.dhikr-tap:active) { transform: scale(.98); }
+.dhikr-card.done { animation: popIn .35s var(--ease-spring); }
+.theme-option[aria-pressed="true"] span { animation: navPop .5s var(--ease-spring); }
+@media (hover: hover) {
+  :is(.primary-action, .secondary-action, .pill-btn, .soft-btn, .theme-option, .setup-banner):hover { transform: translateY(-2px); }
+}
+
+/* ---------- Alarm screen entrance ---------- */
+.alarm-screen.show { animation: alarmIn .45s var(--ease-out); }
+.alarm-screen.show .alarm-inner > * { animation: riseIn .6s var(--ease-out) both; }
+.alarm-screen.show .alarm-inner > *:nth-child(2) { animation-delay: .08s; }
+.alarm-screen.show .alarm-inner > *:nth-child(3) { animation: riseIn .6s var(--ease-out) both .16s, moonFloat 4s ease-in-out infinite .8s; }
+.alarm-screen.show .alarm-inner > *:nth-child(4) { animation-delay: .24s; }
+.alarm-screen.show .alarm-inner > *:nth-child(n+5) { animation-delay: .32s; }
+.alarm-screen.show .stop-btn { animation: stopGlow 2.4s ease-in-out infinite 1s; }
+@keyframes alarmIn { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: none; } }
+@keyframes moonFloat { 50% { transform: translateY(-8px) rotate(-6deg); } }
+@keyframes stopGlow { 50% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 18%, transparent); } }
+
+/* ---------- Sheet, toast, theme switch ---------- */
+.sheet-panel { transition: transform .38s var(--ease-spring); }
+.toast { transition: opacity .25s, transform .35s var(--ease-spring); transform: translate(-50%, 16px) scale(.96); }
+.toast.show { transform: translate(-50%, 0) scale(1); }
+.setup-banner:not([hidden]) { animation: riseIn .5s var(--ease-out) both .1s; }
+.offline-badge:not([hidden]) { animation: popIn .4s var(--ease-spring); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .45s; }
+html.theme-fade .app-shell { animation: themeFade .45s var(--ease-out); }
+@keyframes themeFade { from { opacity: .55; } to { opacity: 1; } }

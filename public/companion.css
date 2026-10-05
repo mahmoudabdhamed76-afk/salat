@@ -68,3 +68,25 @@ body.sheet-open { overflow:hidden; }
   .dhikr-text { font-size:17px; }
   .theme-option small { display:none; }
 }
+
+/* Home setup banner (only while location or notifications are missing) */
+.setup-banner { width:100%; margin:14px 0 0; display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:22px; border:1px solid var(--banner-line, rgba(255,122,26,.3)); background:var(--banner-bg, linear-gradient(135deg, rgba(255,140,43,.16), rgba(255,111,0,.08))); color:var(--text); text-align:right; cursor:pointer; font:inherit; }
+.setup-banner[hidden] { display:none; }
+.setup-banner b { display:block; font-size:14px; }
+.setup-banner small { display:block; margin-top:3px; font-size:11px; color:var(--muted); }
+.setup-banner > span:nth-child(2) { flex:1; }
+.setup-banner-icon { font-size:22px; }
+.setup-banner-go { font-size:18px; font-weight:800; color:var(--accent); }
+html[data-theme="day"] .setup-banner { --banner-line:#d9c9f0; --banner-bg:linear-gradient(135deg,#f1e8fd,#e6f5ee); }
+
+/* Offline badge in the header */
+.offline-badge { align-self:center; font-size:11px; font-weight:800; padding:7px 10px; border-radius:999px; color:#ffd79a; background:rgba(255,170,60,.12); border:1px solid rgba(255,170,60,.25); white-space:nowrap; }
+.offline-badge[hidden] { display:none; }
+html[data-theme="day"] .offline-badge { color:#8a5a12; background:#fdf0dc; border-color:#f1d6a8; }
+
+/* Settings: setup status */
+.setup-card .action-grid { margin:12px 0 4px; }
+.setup-status { list-style:none; margin:10px 0 0; padding:0; display:grid; gap:6px; }
+.setup-status li { font-size:13px; color:var(--muted); padding:9px 12px; border-radius:12px; background:var(--soft-bg, rgba(255,255,255,.05)); }
+.setup-status li.ok { color:var(--ok); background:var(--ok-soft, rgba(80,216,144,.1)); font-weight:700; }
+.voice-offline { margin-top:6px; }
